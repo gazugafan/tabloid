@@ -10,6 +10,7 @@ Store dashboards change their wording from time to time; the steps below are the
 2. **Agreement.** Accept the Firefox Add-on Distribution Agreement and review policies the first time you submit.
 3. **Submit a New Add-on → On this site** (listed). Upload `.output/tabloid-<version>-firefox.zip`.
    - The add-on ID `tabloid@kencation.com` is permanent once uploaded.
+   - Compatibility: tick **Firefox** only, not **Firefox for Android**. Firefox for Android doesn't let extensions replace the new tab or home page, so Tabloid would install there with no way to open it.
 4. **Source code.** Answer yes (the code is bundled), and upload `.output/tabloid-<version>-sources.zip`. In the notes to reviewers, give the build steps:
    > Node 25 (see .nvmrc), then `npm ci` and `npm run zip:firefox`. Output: `.output/firefox-mv3/` and `.output/tabloid-<version>-firefox.zip`.
 5. **Listing.** Name "Tabloid: RSS & Widget Dashboard", summary and description from `store/listing.md`, categories, support link (GitHub issues), privacy policy (paste `PRIVACY.md`), and a license (AMO asks you to pick one; "All Rights Reserved" is an option).
