@@ -1,0 +1,8 @@
+/* The page color before the main stylesheet is ready, so there is no white flash. The values match the
+   theme colors in assets/base.css. early.js may set data-theme and --bg from the saved appearance. */
+html { background: var(--bg, #f4f5f7); color-scheme: light dark; }
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme='light']) { background: var(--bg, #14161a); }
+}
+html[data-theme='dark'] { background: var(--bg, #14161a); color-scheme: dark; }
+html[data-theme='light'] { color-scheme: light; }

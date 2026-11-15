@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="1.0">
+  <head><title>Subscriptions from Feedly</title></head>
+  <body>
+    <outline text="Tech" title="Tech">
+      <outline type="rss" text="Hacker News" title="Hacker News" xmlUrl="https://news.ycombinator.com/rss" htmlUrl="https://news.ycombinator.com/"/>
+      <outline type="rss" text="Ars &amp;amp; Friends" xmlUrl="https://feeds.arstechnica.com/arstechnica/index"/>
+      <outline text="Dev">
+        <outline type="rss" title="GitHub Blog" xmlUrl="https://github.blog/feed/"/>
+      </outline>
+    </outline>
+    <outline type="rss" text="Loose feed" xmlUrl="http://example.com/feed.xml"/>
+    <outline text="Bad ones">
+      <outline type="rss" text="Script" xmlUrl="javascript:alert(1)"/>
+      <outline type="rss" text="Dupe" xmlUrl="https://news.ycombinator.com/rss"/>
+      <outline type="rss" xmlUrl="https://noname.test/rss"/>
+    </outline>
+  </body>
+</opml>

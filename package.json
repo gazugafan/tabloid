@@ -1,0 +1,39 @@
+{
+  "name": "tabloid",
+  "description": "Tabloid: RSS & Widget Dashboard",
+  "private": true,
+  "license": "UNLICENSED",
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox",
+    "compile": "vue-tsc --noEmit",
+    "test": "vitest run",
+    "postinstall": "wxt prepare"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.12.0",
+    "grid-layout-plus": "^1.1.1",
+    "pinia": "^4.1.0",
+    "vue": "^3.5.44",
+    "vue-sonner": "^2.0.9"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.10",
+    "@vue/test-utils": "^2.5.1",
+    "@wxt-dev/module-vue": "^1.0.3",
+    "happy-dom": "^21.0.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.12",
+    "vue-tsc": "^3.3.14",
+    "wxt": "^0.21.5"
+  }
+}

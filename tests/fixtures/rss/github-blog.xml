@@ -1,0 +1,1209 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>The GitHub Blog</title>
+	<atom:link href="https://github.blog/feed/" rel="self" type="application/rss+xml" />
+	<link>https://github.blog/</link>
+	<description>Updates, ideas, and inspiration from GitHub to help developers build and design software.</description>
+	<lastBuildDate>Thu, 05 Nov 2026 20:23:25 +0000</lastBuildDate>
+	<language>en-US</language>
+	<sy:updatePeriod>
+	hourly	</sy:updatePeriod>
+	<sy:updateFrequency>
+	1	</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=7.1.4</generator>
+
+<image>
+	<url>https://github.blog/wp-content/uploads/2019/01/cropped-github-favicon-512.png?fit=32%2C32</url>
+	<title>The GitHub Blog</title>
+	<link>https://github.blog/</link>
+	<width>32</width>
+	<height>32</height>
+</image> 
+<site xmlns="com-wordpress:feed-additions:1">153214340</site>	<item>
+		<title>Inside GitHub&#8217;s new Git storage architecture</title>
+		<link>https://github.blog/engineering/architecture-optimization/inside-githubs-new-git-storage-architecture/</link>
+		
+		<dc:creator><![CDATA[Karthik Raman]]></dc:creator>
+		<pubDate>Thu, 05 Nov 2026 20:23:21 +0000</pubDate>
+				<category><![CDATA[Architecture & optimization]]></category>
+		<category><![CDATA[Engineering]]></category>
+		<category><![CDATA[Git]]></category>
+		<category><![CDATA[Infrastructure]]></category>
+		<category><![CDATA[technical deep dive]]></category>
+		<guid isPermaLink="false">https://github.blog/?p=100002</guid>
+
+					<description><![CDATA[<p>GitHub's new Git storage architecture is built so thousands of agents can push to a single repository at once. Here's how it works.</p>
+<p>The post <a href="https://github.blog/engineering/architecture-optimization/inside-githubs-new-git-storage-architecture/">Inside GitHub&#8217;s new Git storage architecture</a> appeared first on <a href="https://github.blog">The GitHub Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body><p class="wp-block-paragraph">Last week at GitHub Universe, we announced our new Git storage architecture, capable of handling thousands of writes per second with reads that scale on demand. Through internal testing, we&rsquo;ve demonstrated the ability to support 5,000 concurrent agents working on a repository, sending 7,200 pushes per second to a repo, all while serving read traffic with consistently low latency. This new architecture is the foundation for GitHub to support agentic development for hundreds of millions of developers, and we&rsquo;ve been building it underneath GitHub while it keeps running.</p>
+
+
+
+<p class="wp-block-paragraph">Over the past year, agents changed what a busy repository looks like on GitHub. In our <a href="https://github.blog/engineering/architecture-optimization/building-git-infrastructure-for-agent-scale-development/">first post</a> in this series, we laid out the two principles behind our next-generation Git storage architecture: minimize coordination, and decouple storage from compute. In our <a href="https://github.blog/engineering/architecture-optimization/the-bridge-to-agent-scale-git-infrastructure/">last post</a>, we covered the bridge: moving 99.99999% of repositories into Azure, scoping the write quorum to individual references, and standing up virtual replicas backed by Azure Blob Storage.</p>
+
+
+
+<p class="wp-block-paragraph">We also left off with an observation: very little of a write needs to be ordered. Git objects are immutable and named by their contents, meaning two writers can store them at the same time without agreeing on anything. The part of a push that needs agreement is the reference update, and a reference update is tiny in comparison. Virtual replicas were the first step toward building around that, and the means by which we onboard repositories to the new architecture.</p>
+
+
+
+<p class="wp-block-paragraph">The rest of the architecture builds on that observation. Only reference updates need agreement. That lets the parts of Git infrastructure that used to be tightly coupled (storing data, serving requests, and maintaining repositories) scale independently. For developers, Git stays Git: they push, fetch, and branch the same way, with the same protections in place. Below, we walk through the requirements behind the design, follow a request through the system, and dive deep into two of its components.</p>
+
+
+
+<h2 id="h-building-for-agent-scale" class="wp-block-heading">Building for agent scale</h2>
+
+
+
+<p class="wp-block-paragraph">We think about the scale of the GitHub platform along two axes:</p>
+
+
+
+<ol class="wp-block-list">
+<li><strong>Horizontal scale</strong> is how many developers and agents can work across many repositories. Many of GitHub&rsquo;s current approaches on this axis have been battle-tested over the years and are carried forward to the new architecture: partitioning of tenants across infrastructure, isolation and/or fairness enforcement of tenant traffic, and load-aware routing, to name a few.</li>
+
+
+
+<li><strong>Vertical scale</strong> is how many developers and agents can work on <strong>one</strong> repository. As agents write more code, we expect individual repositories to get larger and busier, so most of our requirements came from the vertical axis.</li>
+</ol>
+
+
+
+<p class="wp-block-paragraph">Today, the busiest repositories on GitHub.com receive at most dozens of writes in a single second, typically in short bursts. As more of that work shifts to agents running in parallel and around the clock, we expect those bursts to become a sustained rate within the next year. Each push leads to more reads: CI runs, deployment systems pull the new commit, and other agents fetch it for context. This read fan-out results in a large amplification effect on overall traffic that scales with writes.</p>
+
+
+
+<p class="wp-block-paragraph">We&rsquo;re already seeing this trend play out on repositories at the top of the curve. The chart below shows daily requests to one repository on GitHub from March to May, when its traffic grew about 4x. Its growth has continued on an exponential trajectory since then.</p>
+
+
+
+<figure class="wp-block-image size-large"><img data-recalc-dims="1" fetchpriority="high" decoding="async" height="483" width="1024" src="https://github.blog/wp-content/uploads/2026/11/customer-growth.png?resize=1024%2C483" alt="Line chart of daily requests to a single repository from March through May 2026. The March average is 44M requests per day and the May average is 181M requests per day, about a 4x increase." class="wp-image-100004" srcset="https://github.blog/wp-content/uploads/2026/11/customer-growth.png?w=1600 1600w, https://github.blog/wp-content/uploads/2026/11/customer-growth.png?w=300 300w, https://github.blog/wp-content/uploads/2026/11/customer-growth.png?w=768 768w, https://github.blog/wp-content/uploads/2026/11/customer-growth.png?w=1024 1024w, https://github.blog/wp-content/uploads/2026/11/customer-growth.png?w=1536 1536w" sizes="(max-width: 1000px) 100vw, 1000px" /></figure>
+
+
+
+<p class="wp-block-paragraph">We have to plan for a world where agent-driven development keeps accelerating at this speed. Instead of planning for the next increment, we set a target of at least two orders of magnitude more scale. For a single repository, that meant the new architecture needed to:</p>
+
+
+
+<ul class="wp-block-list">
+<li>Accept thousands of writes per second.</li>
+
+
+
+<li>Support multiple writer nodes. There are two reasons for this:
+<ul class="wp-block-list">
+<li>Experience has taught us that indexing incoming packs and checking object connectivity are the most CPU-expensive parts of a write, and that cost scales with the size of the write, so a single node will become compute-bound quickly.</li>
+
+
+
+<li>Spreading that work across many nodes improves fault tolerance and shortens recovery when a node fails.</li>
+</ul>
+</li>
+
+
+
+<li>Minimize commit latency. An agent waits on each push before it moves to its next step.</li>
+
+
+
+<li>Record changes in order for each reference with the ability to quickly linearize across references. A virtual replica that falls behind needs to catch up by downloading <em>only</em> the data it needs to serve the incoming request.</li>
+
+
+
+<li>Keep reads cheap when nothing has changed, which is the common case given the read-to-write ratio.</li>
+
+
+
+<li>Let each component scale independently.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">On top of that, the system had to be able to improve overall reliability and scale globally.</p>
+
+
+
+<h2 class="wp-block-heading" id="introducing-project-rubicon">Introducing &ldquo;Project Rubicon&rdquo;</h2>
+
+
+
+<p class="wp-block-paragraph">In May of 2026, hot on the heels of the initial Azure migration, we started working on a design that could meet those demands. We tried several approaches. In all of them, pack data lived in Azure Blob Storage, and in some we experimented with keeping reference state there too. We&rsquo;ll cover some of the trade-offs we found below, but we settled on a design we felt maximized throughput while preserving the correctness, durability, availability, and latency guarantees a platform like GitHub requires. We called it &ldquo;Rubicon,&rdquo; a nod to the point of no return the industry crossed with agentic development.</p>
+
+
+
+<p class="wp-block-paragraph">Let&rsquo;s walk through Rubicon from the top down. Many things stay the same: requests from Git clients, the API, and the web UI arrive at Spokes, which still handles routing and load balancing, and serves the internal API that the rest of GitHub uses to read and write repository data. Spokes also maintains its role as a placement and balancing service, maintaining the partitioning, isolation, and tenant fairness required for horizontal scale. The data plane underneath Spokes, in contrast, is new.</p>
+
+
+
+<figure class="wp-block-image size-large"><img data-recalc-dims="1" decoding="async" height="584" width="1024" src="https://github.blog/wp-content/uploads/2026/11/request-flow.png?resize=1024%2C584" alt="Architecture diagram. Git, API, and Web requests pass through Spokes to groups of virtual replicas per repository. Virtual replicas hold only cached state. Ref-CAS stores refs and the pack manifest, and Azure Blob Storage stores pack data. Compaction nodes compact and garbage collect packs in Blob Storage and update the pack manifest in Ref-CAS." class="wp-image-100005" srcset="https://github.blog/wp-content/uploads/2026/11/request-flow.png?w=1600 1600w, https://github.blog/wp-content/uploads/2026/11/request-flow.png?w=300 300w, https://github.blog/wp-content/uploads/2026/11/request-flow.png?w=768 768w, https://github.blog/wp-content/uploads/2026/11/request-flow.png?w=1024 1024w, https://github.blog/wp-content/uploads/2026/11/request-flow.png?w=1536 1536w" sizes="(max-width: 1000px) 100vw, 1000px" /></figure>
+
+
+
+<p class="wp-block-paragraph">Spokes routes each request to one of a small group of virtual replicas assigned to that repository. Virtual replicas are a single fleet of disposable compute that serves reads, writes, or both. A virtual replica&rsquo;s local disk is a cache that can be rebuilt at any time.</p>
+
+
+
+<p class="wp-block-paragraph">Spokes routes a repository&rsquo;s traffic to the same virtual replicas when it can, which keeps their caches warm and latency low, but nothing about correctness depends on a request landing on any particular virtual replica. When a virtual replica goes away, the repository&rsquo;s other virtual replicas keep serving, and a replacement fills its cache as traffic arrives.</p>
+
+
+
+<p class="wp-block-paragraph">When a repository gets busy, we add more virtual replicas. Separately, a fleet of compaction nodes works in the background, directly against Blob Storage and Ref-CAS, to merge each repository&rsquo;s packs and remove unreachable objects. That work never runs on a virtual replica, meaning their CPU and memory can be almost entirely dedicated to serving requests.</p>
+
+
+
+<p class="wp-block-paragraph">Durable state lives in two places:</p>
+
+
+
+<ol class="wp-block-list">
+<li><strong>Git objects</strong>, in the form of packs and auxiliary read acceleration data, live in Azure Blob Storage.</li>
+
+
+
+<li><strong>References</strong> and the list of packs that make up the repository (the pack manifest) live in a separate replicated log service we call Ref-CAS (for &ldquo;Reference Compare-and-Swap&rdquo;).</li>
+</ol>
+
+
+
+<p class="wp-block-paragraph">Let&rsquo;s walk the architecture from the perspective of a write and a read:</p>
+
+
+
+<ul class="wp-block-list">
+<li><strong>Write:</strong> a virtual replica indexes the incoming pack and uploads it to Blob Storage, then commits one transaction to Ref-CAS that lists the pack in the manifest and updates the references. Later, a compaction node merges that pack with others to keep reads fast.</li>
+
+
+
+<li><strong>Read:</strong> a virtual replica checks its reference version with Ref-CAS, pulls the packs it needs from Blob Storage into its cache, and serves the read from there.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">There are many distinct approaches we&rsquo;ve taken within the new architecture, from the software stack on the virtual replicas to how traffic routing and workload scheduling are tuned for different use cases (e.g., many small repos vs. one large one). Let&rsquo;s dive deep into two components of the architecture and tell their stories centered on the two design principles.</p>
+
+
+
+<h2 class="wp-block-heading" id="minimizing-coordination-mutating-reference-state-at-high-throughput">Minimizing coordination: mutating reference state at high throughput</h2>
+
+
+
+<p class="wp-block-paragraph">Object storage services like Azure Blob Storage are incredibly good at what they do, and natural fits for many data-heavy applications like source code storage. They are durable and replicated, hold as much as we need them to, have a relatively low cost per byte, and deliver exceptionally high aggregate throughput so long as traffic is spread across many keys. As a result, nearly everything durable in the new Git storage architecture lives in Azure Blob Storage, including:</p>
+
+
+
+<ul class="wp-block-list">
+<li>Packs and indexes written by pushes, compaction, and garbage collection.</li>
+
+
+
+<li>Various read accelerators (like multi-pack indexes, reachability bitmaps, and some custom formats) that our maintenance process builds from those packs.</li>
+
+
+
+<li>Records that let compaction and garbage collection resume or audit their work, along with the leases that compaction nodes use to claim work.</li>
+
+
+
+<li>Cached responses for frequently repeated fetches.</li>
+
+
+
+<li>Checkpoints for the reference state of the repository, though not the authoritative state used to serve requests.</li>
+</ul>
+
+
+
+<figure class="wp-block-image size-large"><img data-recalc-dims="1" decoding="async" height="535" width="1024" src="https://github.blog/wp-content/uploads/2026/11/blob-contents.png?resize=1024%2C535" alt="Diagram of one repository's data in Azure Blob Storage. Push, Compaction, Maintenance, GC, and Ref-CAS write into it, and fetches read from it by exact key. It holds packs and indexes, records and leases, read accelerators such as the multi-pack index and reachability bitmap, cached fetch responses, and reference checkpoints." class="wp-image-100006" srcset="https://github.blog/wp-content/uploads/2026/11/blob-contents.png?w=1600 1600w, https://github.blog/wp-content/uploads/2026/11/blob-contents.png?w=300 300w, https://github.blog/wp-content/uploads/2026/11/blob-contents.png?w=768 768w, https://github.blog/wp-content/uploads/2026/11/blob-contents.png?w=1024 1024w, https://github.blog/wp-content/uploads/2026/11/blob-contents.png?w=1536 1536w" sizes="(max-width: 1000px) 100vw, 1000px" /></figure>
+
+
+
+<p class="wp-block-paragraph">Most of that data is written once to a distinct key and never changes afterward, which is what makes it highly suitable for Blob Storage.</p>
+
+
+
+<p class="wp-block-paragraph">References are the opposite. A busy repository&rsquo;s references are a relatively small piece of state that many writes race to update at the same time. That access pattern is harder to serve from Blob Storage, and our first prototypes showed us why. Object storage for this kind of workload is an intuitive choice, and one that works well up to a certain level of scale: conditional writes give a compare-and-swap for free, and the data is already durable and replicated. However, we ran into a difficult set of choices, illustrated below by two approaches we tried.</p>
+
+
+
+<p class="wp-block-paragraph">Our <strong>first approach</strong> was a write-ahead log for all of a repository&rsquo;s references, indexed by a single blob. Every update is a conditional write against that blob. It&rsquo;s correct, and reads are cheap: a virtual replica asks whether the blob has changed, and if it hasn&rsquo;t, it&rsquo;s done. Writes are where it falls short. Only one conditional write to a blob can be in flight at a time, so even when we batch every push that arrives during a write into the next one, the repository&rsquo;s write ceiling is one write per round trip to a single blob. In practice, this netted us write throughput in the mid-hundreds per second.</p>
+
+
+
+<p class="wp-block-paragraph">Our <strong>second approach</strong> split the references across several segment blobs, with each reference hashing to one of them. Writes to references in different segments no longer wait on each other, which raises the ceiling. But a read now has to check every segment to know whether anything changed, and it&rsquo;s only as fast as the slowest segment. We&rsquo;d traded write latency for read latency, and reads outnumber writes by orders of magnitude. We can visualize this by showing multiple writes and a read side by side:</p>
+
+
+
+<figure class="wp-block-video"><video height="852" style="aspect-ratio: 1600 / 852;" width="1600" controls poster="https://github.blog/wp-content/uploads/2026/11/Screenshot-2026-11-05-at-11.46.15-AM.png" src="https://github.blog/wp-content/uploads/2026/11/679288407-19f91588-17e6-44a2-b864-ea71edb9ea11.mp4"></video></figure>
+
+
+
+<p class="wp-block-paragraph">Neither option met every requirement, so we built something else: a replicated log service dedicated to references, or the Ref-CAS service. This is the (small) consensus group we said at the end of the <a href="https://github.blog/engineering/architecture-optimization/the-bridge-to-agent-scale-git-infrastructure/">last post</a> was still somewhere in the stack. Here&rsquo;s how it works.</p>
+
+
+
+<p class="wp-block-paragraph">Each reference update in Ref-CAS is a compare-and-swap committed by a quorum. A transaction locks only the references it touches, checks that each one still has the value the writer expects, and becomes visible once a majority of the log&rsquo;s replicas have recorded it. Agents mostly push to their own branches, so most updates don&rsquo;t contend, and they replicate in parallel. When two pushes do update the same reference, only one will append to the log.</p>
+
+
+
+<figure class="wp-block-video"><video height="840" style="aspect-ratio: 1600 / 840;" width="1600" controls poster="https://github.blog/wp-content/uploads/2026/11/Screenshot-2026-11-05-at-11.50.04-AM.png" src="https://github.blog/wp-content/uploads/2026/11/ref-cas.mp4"></video></figure>
+
+
+
+<p class="wp-block-paragraph">Each commit to Ref-CAS gets a log sequence number (LSN), and the repository&rsquo;s version is the LSN of its latest commit. Reads start with a version check against that version. A virtual replica sends the version of the reference state it already holds. If that version is still current, the reply carries no references at all, and an unchanged repository costs a single comparison. If the virtual replica is behind, it gets back the current references and version, along with pointers to pack data and anything else that needs to be known, such as when the last garbage collection cycle occurred.</p>
+
+
+
+<p class="wp-block-paragraph">Unlike the consensus group in our legacy architecture, Ref-CAS never holds or validates object data. It only stores pointers to it. A virtual replica uploads a push&rsquo;s pack to Blob Storage before it commits the reference transaction. A reference only ever points at objects that are already durable.</p>
+
+
+
+<p class="wp-block-paragraph">These approaches allow us to transact reference state alone in the tens of thousands of operations per second, and provide a baseline for additional annotations on the replication log that help reads decide what to download for a given request.</p>
+
+
+
+<p class="wp-block-paragraph">But supporting thousands of writes per second on a single repository creates a second-order problem: maintaining the performance of reads and writes. For that, we needed a different approach to compaction.</p>
+
+
+
+<h2 class="wp-block-heading" id="decoupling-storage-from-compute-compaction-at-thousands-of-writes-per-second">Decoupling storage from compute: compaction at thousands of writes per second</h2>
+
+
+
+<p class="wp-block-paragraph">Every push adds a pack to Blob Storage. Git can serve a repository from many packs, but each additional pack makes lookups slightly more expensive, so the pack count can&rsquo;t grow without bound. In our legacy architecture, compaction runs on the same replicas that serve traffic, and it has to run on every replica. In the new architecture, it runs entirely in the background on separate nodes, directly against durable storage, using the Ref-CAS service to notify virtual replicas of the evolving state.</p>
+
+
+
+<p class="wp-block-paragraph">Compaction nodes each claim ownership over a subset of the repository&rsquo;s data via a lease, which allows us to scale compaction horizontally. Here&rsquo;s how one compaction node works through a single shard of a repository&rsquo;s packs:</p>
+
+
+
+<figure class="wp-block-video"><video height="852" style="aspect-ratio: 1600 / 852;" width="1600" controls poster="https://github.blog/wp-content/uploads/2026/11/Screenshot-2026-11-05-at-11.54.14-AM.png" src="https://github.blog/wp-content/uploads/2026/11/compaction-steps.mp4"></video></figure>
+
+
+
+<p class="wp-block-paragraph">The node first takes a lease on the shard in Blob Storage, so only one node compacts a shard at a time. Meanwhile, virtual replicas keep uploading packs and listing them in the pack manifest. The node reads the manifest to find new packs and collects them into an open segment, which is effectively a holding ground for data about to be compacted. When the segment reaches a defined limit based on pack count, size, or age, it seals the segment so it accepts no new packs, then combines its packs into fewer, larger ones. While compaction happens, the next segment for the shard can begin capturing its input packs. Before anything is published, the node checks that the new packs contain exactly the same objects as the inputs. It then uploads the new packs and adds them to the manifest. A second transaction removes the inputs from the manifest, and cleanup deletes them later.</p>
+
+
+
+<p class="wp-block-paragraph">To scale out, this process runs independently for many shards at once. Each pack&rsquo;s hash maps to a shard, so adding shards and nodes adds compaction throughput. A compacted pack that&rsquo;s still under the size limit goes back into a shard by its own hash and merges again, so packs grow in tiers until they reach the limit. The net result is an effectively flat pack count while pushes climb:</p>
+
+
+
+<figure class="wp-block-video"><video height="852" style="aspect-ratio: 1600 / 852;" width="1600" controls poster="https://github.blog/wp-content/uploads/2026/11/Screenshot-2026-11-05-at-11.56.07-AM.png" src="https://github.blog/wp-content/uploads/2026/11/compaction-scale.mp4"></video></figure>
+
+
+
+<p class="wp-block-paragraph">Compaction merges packs, but it keeps every object. Garbage collection is the step that removes objects nothing references anymore, like the ones left behind by deleted branches and force-pushes. In our new architecture, garbage collection works very similarly to compaction by using dedicated workers to handle the compute-heavy portion. It also has a few special behaviors for safely removing data, which are worthy of their own discussion.</p>
+
+
+
+<p class="wp-block-paragraph">Using these approaches, we&rsquo;ve been able to consistently demonstrate a flat latency curve as writes climb, and we have other planned optimizations to make the compaction and garbage collection processes themselves more performant.</p>
+
+
+
+<h2 class="wp-block-heading" id="what-comes-next">What comes next</h2>
+
+
+
+<p class="wp-block-paragraph">The two principles we started with let each part of this architecture scale on its own. We scale reads and writes by adding virtual replicas. Ref-CAS orders each reference independently instead of the whole repository. We scale maintenance by adding compaction nodes. Our goal is for every repository, from one developer&rsquo;s side project to the busiest monorepo, to run on the same architecture with no special handling for the busy ones. Repositories don&rsquo;t stay small. A side project can pick up a fleet of agents overnight, and it shouldn&rsquo;t need a migration or special handling from us to keep up. One architecture also means every improvement we make reaches every repository at once.</p>
+
+
+
+<p class="wp-block-paragraph">This foundation lets us do a lot more. We&rsquo;re focused on three areas next: scaling the architecture beyond what we can predict we&rsquo;ll need today, making agents more efficient at the work they do on GitHub, and evolving Git itself for agentic development.</p>
+
+
+
+<h3 class="wp-block-heading" id="improving-the-architecture">Improving the architecture</h3>
+
+
+
+<p class="wp-block-paragraph">We have plans to take this architecture further. Each of these improvements lets a repository handle more activity while reducing the work behind each request:</p>
+
+
+
+<ul class="wp-block-list">
+<li><strong>Read only what&rsquo;s needed.</strong> Fetch a single object from Blob Storage instead of the whole pack that holds it.</li>
+
+
+
+<li><strong>Organize packs by type.</strong> Group commits, trees, and blobs into their own packs. Many requests then touch less data.</li>
+
+
+
+<li><strong>Partial replicas.</strong> Serve requests without every pack on local disk.</li>
+
+
+
+<li><strong>Materialized views.</strong> Keep repository data in ready-to-use forms, like prepared archives, a near-live shallow copy of the default branch, and agent session context stored alongside each commit.</li>
+
+
+
+<li><strong>Global replicas.</strong> Place replicas in any region, close to the workloads that use them. Reads stay within bounded staleness of the latest write.</li>
+
+
+
+<li><strong>Scale to zero.</strong> Grow and shrink the fleet with the repositories that are actually active.</li>
+</ul>
+
+
+
+<h3 class="wp-block-heading" id="efficient-agent-operations-on-github">Efficient agent operations on GitHub</h3>
+
+
+
+<p class="wp-block-paragraph">Scaling the infrastructure is one side of supporting agents. The other side is making each agent operation cheaper: fewer bytes to fetch, fewer round trips, and less waiting on changes. Each of these fast-follow items builds on the storage work in this post:</p>
+
+
+
+<ul class="wp-block-list">
+<li><strong>Work without a clone.</strong> Many agent tasks never need a full working tree. They need a handful of files and enough context to make a change. They can read both straight from the server.</li>
+
+
+
+<li><strong>Atomic commit API.</strong> Land a multi-file change in one operation. The whole change commits, or it&rsquo;s rejected cleanly on conflict.</li>
+
+
+
+<li><strong>Event streams.</strong> Agents and the systems around them work best with real-time information. A generic event stream lets them subscribe to changes and react as they happen.</li>
+</ul>
+
+
+
+<h3 class="wp-block-heading" id="improving-git-for-agents">Improving Git for agents</h3>
+
+
+
+<p class="wp-block-paragraph">We also have work to do in Git itself. GitHub has been a longtime contributor to the Git project, and we&rsquo;re not stopping now. A few examples of the work we&rsquo;re excited to continue:</p>
+
+
+
+<ul class="wp-block-list">
+<li><strong>Lightweight clones.</strong> Partial clone, shallow clone, and sparse checkout each let an agent fetch less. Each one has gaps. They don&rsquo;t always work well together, either. We want to improve each piece and make them fit.</li>
+
+
+
+<li><strong>Remove hidden scaling costs.</strong> Git still has code paths that slow down much faster than the repository grows. Recent releases fixed several of them, but we expect to find more.</li>
+
+
+
+<li><strong>Faster history walks.</strong> Metadata like the commit-graph can answer merge-base and reachability questions without walking every commit. That matters most when an agent&rsquo;s API call turns into Git work on the server.</li>
+
+
+
+<li><strong>Avoid common gotchas.</strong> Agents make the same mistakes developers do. Git can catch more of the common ones and warn before they cause damage.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Agents have changed how software gets built. GitHub and Git are changing with it. We&rsquo;re excited to take this new architecture across the starting line. It&rsquo;s available in a limited private preview now, with a broader rollout early next year. We can&rsquo;t wait to see what teams build when the number of agents working on a repository is limited by their ideas. We&rsquo;ll keep evolving Git and GitHub alongside our customers and the Git community.</p>
+</body></html>
+<p>The post <a href="https://github.blog/engineering/architecture-optimization/inside-githubs-new-git-storage-architecture/">Inside GitHub&#8217;s new Git storage architecture</a> appeared first on <a href="https://github.blog">The GitHub Blog</a>.</p>
+]]></content:encoded>
+					
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">100002</post-id>	</item>
+		<item>
+		<title>Accessibility statements now have a home on GitHub</title>
+		<link>https://github.blog/open-source/maintainers/accessibility-statements-now-have-a-home-on-github/</link>
+		
+		<dc:creator><![CDATA[Jan Maarten]]></dc:creator>
+		<pubDate>Thu, 05 Nov 2026 16:00:00 +0000</pubDate>
+				<category><![CDATA[Maintainers]]></category>
+		<category><![CDATA[Open Source]]></category>
+		<category><![CDATA[accessibility]]></category>
+		<category><![CDATA[community health files]]></category>
+		<category><![CDATA[maintainers]]></category>
+		<category><![CDATA[open source]]></category>
+		<category><![CDATA[repositories]]></category>
+		<guid isPermaLink="false">https://github.blog/?p=99949</guid>
+
+					<description><![CDATA[<p>GitHub now highlights ACCESSIBILITY.md files and helps maintainers document accessibility goals, known barriers, supported environments, contributor expectations, and reporting processes.</p>
+<p>The post <a href="https://github.blog/open-source/maintainers/accessibility-statements-now-have-a-home-on-github/">Accessibility statements now have a home on GitHub</a> appeared first on <a href="https://github.blog">The GitHub Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body><p class="wp-block-paragraph">Accessibility work often lives in issue trackers, contribution guidelines, audit reports, team knowledge, and conversations with users. When that information has no predictable home, people who encounter a barrier must search for it, and maintainers lose context as contributors and project ownership change.</p>
+
+
+
+<p class="wp-block-paragraph">An <code>ACCESSIBILITY.md</code> file, now visible on repository overview pages, gives a project one durable place to explain its accessibility goals, contributor expectations, supported environments, known limitations, and process for reporting barriers.</p>
+
+
+
+<h2 id="h-github-makes-accessibility-statements-easier-to-find" class="wp-block-heading">GitHub makes accessibility statements easier to find</h2>
+
+
+
+<figure class="wp-block-image size-large"><img data-recalc-dims="1" loading="lazy" decoding="async" height="680" width="1024" src="https://github.blog/wp-content/uploads/2026/11/Screenshot-2026-11-02-at-3.20.14-PM.png?resize=1024%2C680" alt="GitHub&rsquo;s Community Standards page under Insights, showing an Accessibility card under &ldquo;Additional community file&rdquo; with an Add button for creating a statement." class="wp-image-99951" srcset="https://github.blog/wp-content/uploads/2026/11/Screenshot-2026-11-02-at-3.20.14-PM.png?w=1264 1264w, https://github.blog/wp-content/uploads/2026/11/Screenshot-2026-11-02-at-3.20.14-PM.png?w=300 300w, https://github.blog/wp-content/uploads/2026/11/Screenshot-2026-11-02-at-3.20.14-PM.png?w=768 768w, https://github.blog/wp-content/uploads/2026/11/Screenshot-2026-11-02-at-3.20.14-PM.png?w=1024 1024w" sizes="auto, (max-width: 1000px) 100vw, 1000px" /></figure>
+
+
+
+<p class="wp-block-paragraph">GitHub now recognizes the <code>ACCESSIBILITY.md</code> file in the repository&rsquo;s root, <code>.github/</code> directory, or <code>docs/</code> directory. A repository can also inherit a statement from its organization&rsquo;s <code>.github/</code> repository. For public repositories, maintainers can add or propose a statement from <strong>Insights</strong> &gt; <strong>Community Standards</strong> using a concise starter document.</p>
+
+
+
+<p class="wp-block-paragraph">GitHub&rsquo;s community health files help people understand how a project works:</p>
+
+
+
+<ul class="wp-block-list">
+<li>Contribution guidelines explain how to propose changes</li>
+
+
+
+<li>Codes of conduct establish expectations for participation</li>
+
+
+
+<li>Security policies explain how to report vulnerabilities</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Recognizing <code>ACCESSIBILITY.md</code> gives accessibility information a dedicated place alongside that guidance.</p>
+
+
+
+<p class="wp-block-paragraph">New repositories also include an <code>accessibility</code> issue label by default. The statement explains how to report a barrier and what to expect next, while the label helps maintainers organize and track the resulting work.</p>
+
+
+
+<h2 class="wp-block-heading" id="accessibility-statements-make-project-practices-visible">Accessibility statements make project practices visible</h2>
+
+
+
+<p class="wp-block-paragraph"><a href="https://github.com/cli/cli/blob/trunk/.github/ACCESSIBILITY.md">GitHub CLI&rsquo;s accessibility statement</a>, for example, documents settings, known barriers, and workarounds. It explains why table output can be difficult to follow with a screen reader and provides a command that prints pull request numbers and titles one per line instead. It also asks contributors changing prompts or output to show the results with relevant accessibility settings enabled. Developers using the CLI get a specific workaround; developers contributing to it get clear expectations for their changes.</p>
+
+
+
+<p class="wp-block-paragraph">The GitHub Annotation Toolkit&rsquo;s <a href="https://github.com/github/annotation-toolkit/blob/main/ACCESSIBILITY.md">accessibility statement</a> documents a limitation of its Figma library: annotations use canvas position, connecting lines, and matching numbers to visually convey relationships. Access to individual canvas objects does not necessarily communicate what those relationships are.</p>
+
+
+
+<p class="wp-block-paragraph">The statement gives collaborators a concrete alternative: provide a structured text description that identifies each annotated element, its intended semantics and behavior, and any relevant ordering. For developers preparing or receiving a design handoff, this explains what information needs to accompany the visual annotations.</p>
+
+
+
+<p class="wp-block-paragraph">The file also explains how to report accessibility barriers and explicitly states that the library has not undergone keyboard-only or screen-reader testing. Readers get both practical guidance and clear limits on what the project has verified. Showing this information in the repository overview makes it easier to find alongside the project&rsquo;s other documentation.</p>
+
+
+
+<figure class="wp-block-image size-large"><img data-recalc-dims="1" loading="lazy" decoding="async" height="538" width="1024" src="https://github.blog/wp-content/uploads/2026/11/Screenshot-2026-11-02-at-3.20.25-PM.png?resize=1024%2C538" alt="GitHub&rsquo;s file editor displaying the ACCESSIBILITY.md starter template, with instructions for documenting accessibility priorities, contributor expectations, and how to report barriers. " class="wp-image-99952" srcset="https://github.blog/wp-content/uploads/2026/11/Screenshot-2026-11-02-at-3.20.25-PM.png?w=1244 1244w, https://github.blog/wp-content/uploads/2026/11/Screenshot-2026-11-02-at-3.20.25-PM.png?w=300 300w, https://github.blog/wp-content/uploads/2026/11/Screenshot-2026-11-02-at-3.20.25-PM.png?w=768 768w, https://github.blog/wp-content/uploads/2026/11/Screenshot-2026-11-02-at-3.20.25-PM.png?w=1024 1024w" sizes="auto, (max-width: 1000px) 100vw, 1000px" /></figure>
+
+
+
+<h2 class="wp-block-heading" id="document-what-the-project-can-maintain">Document what the project can maintain</h2>
+
+
+
+<p class="wp-block-paragraph">There is no one fixed format for an <code>ACCESSIBILITY.md</code> file. A small library, command-line tool, documentation site, and large web application have different users, risks, and maintenance capacity. Start with accurate information that the project can keep current.</p>
+
+
+
+<ul class="wp-block-list">
+<li><strong>Priorities and goals:</strong> Explain why accessibility matters to the project and which user experiences receive attention.</li>
+
+
+
+<li><strong>Contributor expectations:</strong> Describe the accessibility checks, evidence, or review practices expected for changes, including instructions for human contributors and coding agents.</li>
+
+
+
+<li><strong>Reporting accessibility barriers:</strong> Provide a direct, accessible reporting path. Do not require disability disclosure, screenshots, or recordings.</li>
+
+
+
+<li><strong>Response process:</strong> Explain how maintainers acknowledge, triage, track, and communicate about accessibility issues. If the project uses severity levels, let maintainers assign or confirm them during triage.</li>
+
+
+
+<li><strong>Supported environments:</strong> List the platforms, browsers, input methods, and assistive technologies the project supports or has tested.</li>
+
+
+
+<li><strong>Known limitations:</strong> Describe barriers in terms of the affected experience, include available workarounds, and link to tracked remediation work.</li>
+
+
+
+<li><strong>Ownership and maintenance:</strong> Name the team, role, or maintainer responsible for keeping the statement and related practices current.</li>
+
+
+
+<li><strong>Feedback and improvements:</strong> Explain how users and contributors can suggest changes to the statement or the project&rsquo;s accessibility practices.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Keep in mind that a project can name a Web Content Accessibility Guidelines version and level as a target. A target does not establish verified conformance. A conformance claim requires an evaluation and should identify the evaluated scope, date, method, and evaluator.</p>
+
+
+
+<h2 class="wp-block-heading" id="what-the-most-useful-accessibility-md-files-contain">What the most useful ACCESSIBILITY.md files contain</h2>
+
+
+
+<p class="wp-block-paragraph">The most useful accessibility statements serve people who arrive after something has already gone wrong. Plain language, descriptive links, and a clear reporting route matter more than legal or standards-heavy language.</p>
+
+
+
+<p class="wp-block-paragraph">Useful reporting guidance invites relevant context, such as the affected task, page, observed behavior, browser, operating system, and assistive technology. It makes screenshots and recordings optional and avoids asking someone to prove a disability.</p>
+
+
+
+<p class="wp-block-paragraph">The statement should also set expectations that maintainers can consistently meet. That can include acknowledgement, status updates, available workarounds, expected timelines, and an opportunity for the reporter to verify a fix.</p>
+
+
+
+<h2 class="wp-block-heading" id="start-with-an-example-and-adapt-it">Start with an example and adapt it</h2>
+
+
+
+<p class="wp-block-paragraph">The <a href="https://github.com/open-source-accessibility/accessibility-toolkit/blob/main/ACCESSIBILITY.md">Open Source Accessibility Toolkit</a> provides a detailed public example.</p>
+
+
+
+<p class="wp-block-paragraph">GitHub&rsquo;s Community Standards workflow provides a shorter starter with prompts that projects can replace with their own information. The goal is not to produce a perfect policy before publishing the file. Start with accurate information, name the gaps, and update the statement as the project&rsquo;s accessibility practices mature.</p>
+
+
+
+<p class="wp-block-paragraph">Adding an accessibility statement makes accessibility work more discoverable to users, contributors, and maintainers. Normalizing that practice across open source projects helps make accessibility part of how communities plan, build, report, and improve their work.</p>
+
+
+
+<div class="wp-block-group post-content-cta has-global-padding is-layout-constrained wp-block-group-is-layout-constrained">
+<p class="wp-block-paragraph"><a href="https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/adding-an-accessibility-page-to-your-repository">Add an accessibility statement to your repository &gt;</a></p>
+</div>
+</body></html>
+<p>The post <a href="https://github.blog/open-source/maintainers/accessibility-statements-now-have-a-home-on-github/">Accessibility statements now have a home on GitHub</a> appeared first on <a href="https://github.blog">The GitHub Blog</a>.</p>
+]]></content:encoded>
+					
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">99949</post-id>	</item>
+		<item>
+		<title>Arnis turns any place on Earth into a Minecraft world</title>
+		<link>https://github.blog/open-source/maintainers/arnis-turns-any-place-on-earth-into-a-minecraft-world/</link>
+		
+		<dc:creator><![CDATA[Alex Perrault]]></dc:creator>
+		<pubDate>Tue, 03 Nov 2026 16:00:00 +0000</pubDate>
+				<category><![CDATA[Maintainers]]></category>
+		<category><![CDATA[Open Source]]></category>
+		<category><![CDATA[GitHub Copilot]]></category>
+		<category><![CDATA[GitHub Copilot app]]></category>
+		<category><![CDATA[open source]]></category>
+		<category><![CDATA[open source community]]></category>
+		<guid isPermaLink="false">https://github.blog/?p=99955</guid>
+
+					<description><![CDATA[<p>Louis Erbkamm built the first prototype in his free time. Now GitHub Copilot helps him maintain it alone.</p>
+<p>The post <a href="https://github.blog/open-source/maintainers/arnis-turns-any-place-on-earth-into-a-minecraft-world/">Arnis turns any place on Earth into a Minecraft world</a> appeared first on <a href="https://github.blog">The GitHub Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body><p class="wp-block-paragraph">Louis Erbkamm knows his way around Arnis, the smallest town in Germany, but he&rsquo;s never set foot in it.</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">I know where the shops are. Where the boats are&hellip; I know the city pretty well, but I haven&rsquo;t been there yet.</p>
+<cite>Louis Erbkamm, maintainer of Arnis</cite></blockquote>
+
+
+
+<p class="wp-block-paragraph">Arnis is also the name of his open source project, which takes real-world data from OpenStreetMap and other sources to turn places you know into Minecraft worlds you can freely explore. Since Louis started Arnis in 2022, it&rsquo;s reached close to 900,000 downloads from GitHub and about 70 contributors.</p>
+
+
+
+<h2 id="h-two-weeks-and-a-slow-prototype" class="wp-block-heading">Two weeks and a slow prototype</h2>
+
+
+
+<p class="wp-block-paragraph">Louis grew up playing Minecraft and started coding at 13, always looking for ways to bring code into the game. Arnis began as a fun diversion combining Minecraft with geospatial data, and it went on GitHub, where he already kept his side projects. He finished the first prototype within two weeks while on a break from school.</p>
+
+
+
+<p class="wp-block-paragraph">That first version was Python written by hand, built only on OpenStreetMap, and generating a town took a while. He needed somewhere real to test it, so he looked up towns in Germany, where he lives, and found Arnis. A small town helped while early generation was slow.</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">Arnis has a lot of buildings, it has streets, it has waters, it has all kinds of different elements that are useful to test with.</p>
+<cite>Louis</cite></blockquote>
+
+
+
+<p class="wp-block-paragraph">The project didn&rsquo;t have a name yet, so it borrowed the town&rsquo;s unique moniker.</p>
+
+
+
+<h2 id="h-a-community-that-brings-its-own-ideas" class="wp-block-heading">A community that brings its own ideas</h2>
+
+
+
+<p class="wp-block-paragraph">When Arnis added elevation, its worlds stopped being flat, and geospatial specialists from all over showed up with ideas on how best to integrate it. They started discussions on their own, and Louis says that&rsquo;s exactly what he needed.</p>
+
+
+
+<p class="wp-block-paragraph">Bigger calls happen in the open too: before porting Arnis from Python to Rust, Louis opened discussions on GitHub to hear different perspectives. Contributors have since translated Arnis into about 20 languages and built major features of their own.</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">The best thing that has happened to me is essentially this big community on GitHub to see actually people from all kinds of different fields coming together to work on something that I started as a side project.</p>
+<cite>Louis</cite></blockquote>
+
+
+
+<h2 id="h-how-a-trash-bin-gets-into-minecraft" class="wp-block-heading">How a trash bin gets into Minecraft</h2>
+
+
+
+<p class="wp-block-paragraph">Some features start on a walk. Louis noticed how many trash bins there were in his city, and there were none in his generated worlds.</p>
+
+
+
+<p class="wp-block-paragraph">Minecraft has no dedicated bins, so he took the question to the community, and together they found a block that fit. Placing one follows the same path as everything else: for the area a user selects, Arnis queries OpenStreetMap for every mapped element, then looks up each element&rsquo;s coordinates and type.</p>
+
+
+
+<p class="wp-block-paragraph">If an element isn&rsquo;t mapped, Arnis can&rsquo;t place it. For structures too detailed for the map to describe, like the Statue of Liberty in New York, or Christ the Redeemer in Rio de Janeiro, Arnis converts 3D models into Minecraft blocks.</p>
+
+
+
+<h2 id="h-one-maintainer-a-stack-of-pull-requests" class="wp-block-heading">One maintainer, a stack of pull requests</h2>
+
+
+
+<p class="wp-block-paragraph">As the sole maintainer, Louis reviews every pull request himself, and they stack up. He usually spends evenings or weekends working on Arnis, which means the community has to wait for him to be done with work for the day.</p>
+
+
+
+<p class="wp-block-paragraph">He uses GitHub Copilot to get an overview of open issues and bugs from the latest release, see how many people are running into them, trace where a bug came from in the codebase, and create a fix. Since he brought AI into the project, he says, code reviews and documentation have both increased.</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">I could delegate those annoying and boring tasks to Copilot, while I could still have a look at those really cool topics that are related to the development of it.</p>
+<cite>Louis</cite></blockquote>
+
+
+
+<h2 id="h-sub-agents-that-look-for-regressions" class="wp-block-heading">Sub-agents that look for regressions</h2>
+
+
+
+<p class="wp-block-paragraph">Big features arrive as big pull requests.</p>
+
+
+
+<p class="wp-block-paragraph">Louis opens a large pull request in the GitHub Copilot app for a first overview and a performance review, with Copilot running in the background looking for small changes that would cut memory usage or generation time.</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">It takes just one wrong calculation in street lights, for example, to make the generation time of an entire city much slower.</p>
+<cite>Louis</cite></blockquote>
+
+
+
+<p class="wp-block-paragraph">He also keeps a mental list of the areas of the codebase that need extra care whenever someone changes them, and he has written the same warnings out by hand over and over.</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">I&rsquo;m starting a few sub agents with the GitHub Copilot app to have a look specifically at those cases, and to come up with corner cases to test to make sure that we do not introduce any regressions into new releases.</p>
+<cite>Louis</cite></blockquote>
+
+
+
+<p class="wp-block-paragraph">He likes that the terminal, his files, the code changes and the pull request all sit in one app next to the chat.</p>
+
+
+
+<h2 id="h-an-unexpected-classroom" class="wp-block-heading">An unexpected classroom</h2>
+
+
+
+<p class="wp-block-paragraph">Louis&rsquo;s favorite use of Arnis is in schools, where teachers have generated their city or a neighborhood park.</p>
+
+
+
+<p class="wp-block-paragraph">Some turn it into a contest: every student starts from the same generated area, improves a nearby park or playground using Arnis and Minecraft, and the class looks at the results together.</p>
+
+
+
+<h2 id="h-where-arnis-goes-next" class="wp-block-heading">Where Arnis goes next</h2>
+
+
+
+<p class="wp-block-paragraph">Recent releases have gone beyond the bounds of Earth, adding the Moon and Mars. Louis wants Arnis to stay easy to use while getting closer to reality, with more detail in less time, and he would like to see it in more schools.</p>
+
+
+
+<h2 id="h-start-with-your-hometown" class="wp-block-heading">Start with your hometown</h2>
+
+
+
+<p class="wp-block-paragraph">Download Arnis from github.com/louis-e/arnis, pick a place on the map, choose where to spawn, and click Start Generation: within a few minutes, the world is ready to open in Minecraft. Louis suggests a place you know, like your hometown or somewhere memorable you&rsquo;ve been, such as the Grand Canyon or Niagara Falls. Then look for what&rsquo;s missing.</p>
+
+
+
+<blockquote class="wp-block-quote is-layout-flow wp-block-quote-is-layout-flow">
+<p class="wp-block-paragraph">So maybe you see a bench that was not generated even though it is there.</p>
+<cite>Louis</cite></blockquote>
+
+
+
+<p class="wp-block-paragraph">Map it on OpenStreetMap, or tell Louis if it&rsquo;s a bug and he will fix it.</p>
+
+
+
+<p class="wp-block-paragraph"></p>
+</body></html>
+<p>The post <a href="https://github.blog/open-source/maintainers/arnis-turns-any-place-on-earth-into-a-minecraft-world/">Arnis turns any place on Earth into a Minecraft world</a> appeared first on <a href="https://github.blog">The GitHub Blog</a>.</p>
+]]></content:encoded>
+					
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">99955</post-id>	</item>
+		<item>
+		<title>Game Off 2026: The theme is SHIFT</title>
+		<link>https://github.blog/open-source/gaming/game-off-2026-the-theme-is-shift/</link>
+		
+		<dc:creator><![CDATA[Lee Reilly]]></dc:creator>
+		<pubDate>Sun, 01 Nov 2026 21:36:00 +0000</pubDate>
+				<category><![CDATA[Gaming]]></category>
+		<category><![CDATA[Open Source]]></category>
+		<category><![CDATA[GitHub Game Off]]></category>
+		<guid isPermaLink="false">https://github.blog/?p=99918</guid>
+
+					<description><![CDATA[<p>GitHub’s annual month-long game jam is back for its 14th year! This November, make a game inspired by the theme SHIFT. Change gears, swap perspectives, bend reality, or just press a certain key.</p>
+<p>The post <a href="https://github.blog/open-source/gaming/game-off-2026-the-theme-is-shift/">Game Off 2026: The theme is SHIFT</a> appeared first on <a href="https://github.blog">The GitHub Blog</a>.</p>
+]]></description>
+										<content:encoded><![CDATA[<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html><body><p class="wp-block-paragraph">It&rsquo;s time to make <kbd>Shift</kbd> happen.</p>
+
+
+
+<p class="wp-block-paragraph"><a href="https://itch.io/jam/game-off-2026">Game Off</a>, GitHub&rsquo;s annual month-long game jam, returns for its 14th year this November. Thousands of developers have joined us over the years to make everything from polished platformers to wonderfully weird experiments.</p>
+
+
+
+<p class="wp-block-paragraph">Whether you&rsquo;re making your first game or your fiftieth, we&rsquo;d love for you to join us.</p>
+
+
+
+<p class="wp-block-paragraph">The theme for Game Off 2026 is <strong>SHIFT</strong>!</p>
+
+
+
+<p class="wp-block-paragraph">Shift gears. Shift perspectives. Shift dimensions. Shift bits. Work the night shift. Or make a game where the only buttons are the <kbd>Shift</kbd> keys.</p>
+
+
+
+<p class="wp-block-paragraph">How you interpret the theme is entirely up to you.</p>
+
+
+
+<p class="wp-block-paragraph">You have until December 1, 2026, at 13:37 PST to build and submit a game inspired by SHIFT. Strong or loose inspirations apply!</p>
+
+
+
+<div class="wp-block-buttons is-content-justification-center is-layout-flex wp-container-core-buttons-is-layout-3e41869c wp-block-buttons-is-layout-flex">
+<div class="wp-block-button"><a class="wp-block-button__link has-text-align-center wp-element-button" href="https://itch.io/jam/game-off-2026">Join Game Off 2026 on itch.io</a></div>
+</div>
+
+
+
+<aside data-color-mode="light" data-dark-theme="dark" data-light-theme="light_dimmed" class="wp-block-group post-aside--large p-4 p-md-6 is-style-light-dimmed has-global-padding is-layout-constrained wp-block-group-is-layout-constrained is-style-light-dimmed--1" style="border-top-width:4px">
+<p class="wp-block-paragraph"><strong>shift /&#643;&#618;ft/</strong></p>
+
+
+
+<p class="wp-block-paragraph"><em>Noun</em></p>
+
+
+
+<ul class="wp-block-list">
+<li>A change in position, direction, perspective, or reality.</li>
+
+
+
+<li>A period of scheduled work, usually when something breaks.</li>
+
+
+
+<li>A keyboard key used to capitalize letters, sprint in games, and accidentally enable sticky keys.</li>
+
+
+
+<li>In computing, an operation that moves bits left or right, because apparently bits need exercise too.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph"><em>Verb</em></p>
+
+
+
+<ul class="wp-block-list">
+<li>To change gears, direction, or the laws of physics.</li>
+
+
+
+<li>To move between worlds, dimensions, timelines, or questionable life choices.</li>
+
+
+
+<li>To transform into something (or someone) entirely different.</li>
+
+
+
+<li>To pass responsibility to somebody else, especially when the production build breaks.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph"><em>Acronyms (that we definitely just made up)</em></p>
+
+
+
+<p class="wp-block-paragraph">Okay, we made these up:</p>
+
+
+
+<ul class="wp-block-list">
+<li>Space Hamsters Initiating Faster Travel</li>
+
+
+
+<li>Shapeshifters Hiding In Forgotten Temples</li>
+
+
+
+<li>Suspicious Humans Investigating Feral Toasters</li>
+
+
+
+<li>Skeletons Hastily Improvising Functional Transportation</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Or invent your own. We love seeing where you take the theme.</p>
+</aside>
+
+
+
+<h2 id="h-need-inspiration-here-are-a-few-concept-ideas" class="wp-block-heading">Need inspiration? Here are a few concept ideas</h2>
+
+
+
+<ul class="wp-block-list">
+<li><strong>A one-button (or two-button) game</strong> where the Shift keys are is your only control.</li>
+
+
+
+<li><strong>A racing game</strong> where shifting gears changes more than your speed. Second gear reverses gravity, third slows time, and fourth removes the brakes.</li>
+
+
+
+<li><strong>A perspective puzzler</strong> where rotating the camera turns walls into floors and shifts shadows into platforms.</li>
+
+
+
+<li><strong>A puzzle-platformer</strong> where you shift between two overlapping realities. That broken bridge might exist in the other world. Unfortunately, so might the monster standing on it.</li>
+
+
+
+<li><strong>A shapeshifting adventure</strong> where you transform into creatures and objects, inheriting their abilities and weaknesses.</li>
+
+
+
+<li><strong>A night-shift horror game</strong> set in a convenience store where the customers get progressively stranger, and whatever&rsquo;s in aisle seven definitely isn&rsquo;t covered by your training.</li>
+
+
+
+<li><strong>A comedy detective game</strong> where you committed the crime and must shift the blame onto increasingly unlikely suspects without contradicting the evidence.</li>
+
+
+
+<li><strong>A programming puzzler:</strong> Use bitwise shifts to manipulate the world. Shift left to double an object&rsquo;s size, shift right to halve it, and discover what happens when you run out of bits.</li>
+
+
+
+<li><strong>An</strong> <strong>adventure</strong> <strong>game</strong> about convincing somebody to cover your shift so you can attend the final boss battle.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Of course, you could also build a game about shifting tectonic plates, shape-shifting aliens, shifting alliances, shifting sands, or a particularly ambitious stick shift.</p>
+
+
+
+<p class="wp-block-paragraph">Don&rsquo;t overthink it. Pick an interpretation that interests you and see where it takes you.</p>
+
+
+
+<p class="wp-block-paragraph"><strong>Pro tip:</strong> Start with one mechanic and one playable level. Get those working before adding the multiverse. Future you (and your bug tracker) will thank you.</p>
+
+
+
+<p class="wp-block-paragraph" id="h-need-another-perspective-try-brainstorming-with-github-copilot-give-it-the-theme-a-few-constraints-and-see-what-it-comes-up-with">Need another perspective? Try brainstorming with GitHub Copilot. Give it the theme, a few constraints, and see what it comes up with:</p>
+
+
+<div class="wp-block-code-wrapper">
+<pre class="wp-block-code language-plaintext"><code>Act as an indie game designer. Suggest 10 original game concepts inspired by SHIFT, each with a unique core mechanic, genre, and technical twist. Prioritize ideas a solo developer could prototype in a weekend.</code></pre>
+<a href="https://github.com/copilot?prompt=Act%20as%20an%20indie%20game%20designer.%20Suggest%2010%20original%20game%20concepts%20inspired%20by%20SHIFT%2C%20each%20with%20a%20unique%20core%20mechanic%2C%20genre%2C%20and%20technical%20twist.%20Prioritize%20ideas%20a%20solo%20developer%20could%20prototype%20in%20a%20weekend.&amp;utm_source=github-blog&amp;utm_medium=blog&amp;utm_campaign=organic-blog-copilot-button" class="code-copilot-btn" aria-label="Open in Copilot" target="_blank" rel="noopener noreferrer"><svg aria-hidden="true" width="16" height="16" viewbox="0 0 16 16" class="octicon octicon-copilot"><path d="M7.998 15.035c-4.562 0-7.873-2.914-7.998-3.749V9.338c.085-.628.677-1.686 1.588-2.065.013-.07.024-.143.036-.218.029-.183.06-.384.126-.612-.201-.508-.254-1.084-.254-1.656 0-.87.128-1.769.693-2.484.579-.733 1.494-1.124 2.724-1.261 1.206-.134 2.262.034 2.944.765.05.053.096.108.139.165.044-.057.094-.112.143-.165.682-.731 1.738-.899 2.944-.765 1.23.137 2.145.528 2.724 1.261.566.715.693 1.614.693 2.484 0 .572-.053 1.148-.254 1.656.066.228.098.429.126.612.012.076.024.148.037.218.924.385 1.522 1.471 1.591 2.095v1.872c0 .766-3.351 3.795-8.002 3.795Zm0-1.485c2.28 0 4.584-1.11 5.002-1.433V7.862l-.023-.116c-.49.21-1.075.291-1.727.291-1.146 0-2.059-.327-2.71-.991A3.222 3.222 0 0 1 8 6.303a3.24 3.24 0 0 1-.544.743c-.65.664-1.563.991-2.71.991-.652 0-1.236-.081-1.727-.291l-.023.116v4.255c.419.323 2.722 1.433 5.002 1.433ZM6.762 2.83c-.193-.206-.637-.413-1.682-.297-1.019.113-1.479.404-1.713.7-.247.312-.369.789-.369 1.554 0 .793.129 1.171.308 1.371.162.181.519.379 1.442.379.853 0 1.339-.235 1.638-.54.315-.322.527-.827.617-1.553.117-.935-.037-1.395-.241-1.614Zm4.155-.297c-1.044-.116-1.488.091-1.681.297-.204.219-.359.679-.242 1.614.091.726.303 1.231.618 1.553.299.305.784.54 1.638.54.922 0 1.28-.198 1.442-.379.179-.2.308-.578.308-1.371 0-.765-.123-1.242-.37-1.554-.233-.296-.693-.587-1.713-.7Z"></path><path d="M6.25 9.037a.75.75 0 0 1 .75.75v1.501a.75.75 0 0 1-1.5 0V9.787a.75.75 0 0 1 .75-.75Zm4.25.75v1.501a.75.75 0 0 1-1.5 0V9.787a.75.75 0 0 1 1.5 0Z"></path></svg></a><clipboard-copy aria-label="Copy" class="code-copy-btn" data-copy-feedback="Copied!" value="Act as an indie game designer. Suggest 10 original game concepts inspired by SHIFT, each with a unique core mechanic, genre, and technical twist. Prioritize ideas a solo developer could prototype in a weekend." tabindex="0" role="button"><svg aria-hidden="true" height="16" viewbox="0 0 16 16" version="1.1" width="16" class="octicon octicon-copy js-clipboard-copy-icon"><path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"></path><path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"></path></svg><svg aria-hidden="true" height="16" viewbox="0 0 16 16" version="1.1" width="16" class="octicon octicon-check js-clipboard-check-icon"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"></path></svg></clipboard-copy></div>
+
+
+<h2 class="wp-block-heading" id="how-to-participate">How to participate</h2>
+
+
+
+<p class="wp-block-paragraph">Work alone or form a team. Use whichever programming languages, game engines, frameworks, libraries, and tools make sense for your game.</p>
+
+
+
+<ol class="wp-block-list">
+<li>Create a free GitHub account if you don&rsquo;t already have one.</li>
+
+
+
+<li><a href="https://itch.io/jam/game-off-2026">Join the jam</a>. Head to the Game Off 2026 page on itch.io. If you don&rsquo;t have an itch.io account, you can <a href="https://itch.io/login?intent=jam_submit&amp;return_to=https%3A%2F%2Fitch.io%2Fjam%2Fgame-off-2026">sign in with your GitHub account</a>.</li>
+
+
+
+<li>Create a public repository. Store your game&rsquo;s source code on GitHub. Push your game before December 1, 2026, at 13:37 PST.</li>
+
+
+
+<li>Submit your game on itch.io before December 1, 2026, at 13:37 PST. Pushing your code to GitHub does not submit your entry to the jam. After submissions close, you&rsquo;ll be able to play other entries and cast your votes.</li>
+</ol>
+
+
+
+<h2 class="wp-block-heading" id="voting">Voting</h2>
+
+
+
+<p class="wp-block-paragraph">Here&rsquo;s the fun part: <strong>you decide who wins</strong>.</p>
+
+
+
+<p class="wp-block-paragraph">Once submissions close, it&rsquo;s your turn to play and rate the games your fellow developers have created. Every vote helps determine which games take home the bragging rights.</p>
+
+
+
+<p class="wp-block-paragraph">Entries will be evaluated in the following categories:</p>
+
+
+
+<ul class="wp-block-list">
+<li>Overall</li>
+
+
+
+<li>Gameplay</li>
+
+
+
+<li>Graphics</li>
+
+
+
+<li>Audio</li>
+
+
+
+<li>Innovation</li>
+
+
+
+<li>Theme interpretation</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Voting will end on January 1, 2027, at 13:37 PST. Winners will be announced on the GitHub Blog and GitHub social channels shortly thereafter.</p>
+
+
+
+<h2 class="wp-block-heading" id="light-rules">Light rules</h2>
+
+
+
+<p class="wp-block-paragraph">Game Off is intentionally relaxed, but there are a few guidelines to help keep it fair and fun:</p>
+
+
+
+<ul class="wp-block-list">
+<li>Your game must live in a GitHub repository. You should begin the project during the jam, although templates and starter projects are welcome. The vast majority of the work should take place during the Game Off submission period.</li>
+
+
+
+<li>License it however you like. Open source is encouraged but not required.</li>
+
+
+
+<li>Fly solo or join a team. Work in whichever way makes you most comfortable.</li>
+
+
+
+<li>Use any tools and assets you prefer. Open source, commercial, commissioned, and original assets are all welcome.</li>
+
+
+
+<li>AI-assisted development is allowed. We recognize that AI use in game development is a sensitive subject, and participants have different perspectives. When submitting your game, you&rsquo;ll be asked about your use of AI so others can better understand how it was made.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">That&rsquo;s it. Keep it creative, respectful, and fun&hellip; and make sure your final code is pushed before the deadline.</p>
+
+
+
+<h2 class="wp-block-heading" id="help">Help</h2>
+
+
+
+<h3 class="wp-block-heading" id="new-to-game-development">New to game development?</h3>
+
+
+
+<p class="wp-block-paragraph">You don&rsquo;t need to be an expert to participate. Many Game Off participants create their first game during the jam.</p>
+
+
+
+<p class="wp-block-paragraph">Some use established engines. Some build their own. Others make games for old consoles, unusual hardware, terminals, calculators, or platforms we assumed had been lost to time.</p>
+
+
+
+<p class="wp-block-paragraph">However you build your game, there&rsquo;s no single correct way to play.</p>
+
+
+
+<p class="wp-block-paragraph">Here are a few engines and frameworks you might want to explore:</p>
+
+
+
+<ul class="wp-block-list">
+<li><a href="https://godotengine.org/">Godot</a> (GDScript, C#, C++): Open source, lightweight, beginner-friendly, and excellent for both 2D and 3D games.</li>
+
+
+
+<li><a href="https://unity.com/">Unity</a> (C#): A popular option for 2D, 3D, mobile, and XR games, with a large ecosystem of tutorials and assets.</li>
+
+
+
+<li><a href="https://www.unrealengine.com/">Unreal Engine</a> (C++, Blueprints): A strong choice for cinematic visuals, complex 3D environments, and high-end experiences.</li>
+
+
+
+<li><a href="https://phaser.io/">Phaser</a> (JavaScript, TypeScript): Great for browser-based 2D games, arcade games, and platformers.</li>
+
+
+
+<li><a href="https://www.pygame.org/">Pygame</a> (Python): A friendly way to learn game development fundamentals or prototype an idea quickly.</li>
+
+
+
+<li><a href="https://bevy.org/">Bevy</a> (Rust): A modern, data-driven engine built around an entity component system.</li>
+
+
+
+<li><a href="https://love2d.org/">L&Ouml;VE</a> (Lua): Lightweight, fast, and well suited to 2D games and creative experiments.</li>
+
+
+
+<li><a href="https://flame-engine.org/">Flame</a> (Dart, Flutter): A useful option for developers interested in mobile-first 2D games.</li>
+
+
+
+<li><a href="https://ebitengine.org/">Ebitengine</a> (Go): A straightforward, cross-platform 2D game engine for Go developers.</li>
+
+
+
+<li><a href="https://defold.com/">Defold</a> (Lua): A compact, cross-platform engine with built-in development tools.</li>
+
+
+
+<li><a href="https://libgdx.com/">libGDX</a> (Java): A familiar option for developers coming from Java or Android development.</li>
+
+
+
+<li><a href="https://haxeflixel.com/">HaxeFlixel</a> (Haxe): A good fit for retro-inspired 2D games, platformers, and fast-paced jam projects.</li>
+
+
+
+<li><a href="https://www.raylib.com/">raylib</a> (C, plus bindings for other languages): A simple, code-first library for developers who want to work closer to the metal.</li>
+
+
+
+<li><a href="https://www.lexaloffle.com/pico-8.php">PICO-8</a> (Lua): A fantasy console with deliberate constraints, ideal for tiny games with distinctive pixel-art aesthetics.</li>
+
+
+
+<li><a href="https://tic80.com/">TIC-80</a> (multiple languages): Another fantasy computer for making, playing, and sharing small games.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Looking for teammates or a place to share progress? The <a href="https://itch.io/jam/game-off-2026/community">Game Off 2026 Community</a> is a great place to ask questions, share progress, and look for teammates. There&rsquo;s also a friendly community-run Discord server.</p>
+
+
+
+<h3 class="wp-block-heading" id="new-to-git-or-github">New to Git or GitHub?</h3>
+
+
+
+<p class="wp-block-paragraph">Game Off is the perfect opportunity to check it out. Version control pun fully intended.</p>
+
+
+
+<ul class="wp-block-list">
+<li><a href="https://git-scm.com/docs">Git documentation:</a> Learn the fundamentals of version control and get started with Git.</li>
+
+
+
+<li><a href="https://help.github.com/">GitHub Docs:</a> Explore tutorials, guides, and documentation for building and collaborating on GitHub.</li>
+
+
+
+<li><a href="https://github.com/orgs/community/discussions/">GitHub Community:</a> Ask questions, share your work, and connect with other developers.</li>
+</ul>
+
+
+
+<p class="wp-block-paragraph">Whether you spend November shifting pixels, shifting bits, shifting timelines, or shifting unfinished tasks into the final 24 hours, you&rsquo;ll be part of a global community making games together.</p>
+
+
+
+<p class="wp-block-paragraph">So take a different perspective, change the rules, and see what happens when you press <kbd>&#8679;</kbd>.</p>
+
+
+
+<p class="wp-block-paragraph">Good luck and have fun! Can&rsquo;t wait to play, err, test all your games! &lt;3</p>
+
+
+
+<div class="wp-block-group post-content-cta has-global-padding is-layout-constrained wp-block-group-is-layout-constrained">
+<p class="wp-block-paragraph"><a href="https://itch.io/jam/game-off-2026">Join the jam now &gt;</a></p>
+</div>
+</body></html>
+<p>The post <a href="https://github.blog/open-source/gaming/game-off-2026-the-theme-is-shift/">Game Off 2026: The theme is SHIFT</a> appeared first on <a href="https://github.blog">The GitHub Blog</a>.</p>
+]]></content:encoded>
+					
+		
+		
+		<post-id xmlns="com-wordpress:feed-additions:1">99918</post-id>	</item>
+		
+	</channel>
+</rss>

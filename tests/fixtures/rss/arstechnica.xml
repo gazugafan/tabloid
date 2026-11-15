@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:media="http://search.yahoo.com/mrss/" xmlns:slash="http://purl.org/rss/1.0/modules/slash/" xmlns:sy="http://purl.org/rss/1.0/modules/syndication/" version="2.0">
+    <channel>
+        <title>Ars Technica - All content</title>
+        <atom:link href="https://arstechnica.com/feed/" rel="self" type="application/rss+xml"/>
+        <link>https://arstechnica.com</link>
+        <description>All Ars Technica stories</description>
+        <lastBuildDate>Thu, 05 Nov 2026 22:16:06 +0000</lastBuildDate>
+        <language>en-US</language>
+        <sy:updatePeriod>
+            hourly        </sy:updatePeriod>
+        <sy:updateFrequency>
+            1        </sy:updateFrequency>
+        
+<image>
+	<url>https://cdn.arstechnica.net/wp-content/uploads/2016/10/cropped-ars-logo-512_480-60x60.png</url>
+	<title>Ars Technica</title>
+	<link>https://arstechnica.com</link>
+	<width>32</width>
+	<height>32</height>
+</image> 
+            <item>
+                <title>Sony revives the original Walkman headphones, adds USB-C</title>
+                <link>https://arstechnica.com/gadgets/2026/11/sony-adds-usb-c-to-its-70s-era-mdr-3-walkman-headphones/</link>
+                                    <comments>https://arstechnica.com/gadgets/2026/11/sony-adds-usb-c-to-its-70s-era-mdr-3-walkman-headphones/#comments</comments>
+                
+                <dc:creator>
+                    <![CDATA[Scharon Harding]]>
+                </dc:creator>
+                <pubDate>Thu, 05 Nov 2026 21:56:36 +0000</pubDate>
+                		<category><![CDATA[Tech]]></category>
+		<category><![CDATA[audio]]></category>
+		<category><![CDATA[Sony]]></category>
+		<category><![CDATA[Walkman]]></category>
+                <guid isPermaLink="true">https://arstechnica.com/gadgets/2026/11/sony-adds-usb-c-to-its-70s-era-mdr-3-walkman-headphones/</guid>
+
+                                    <description>
+                        <![CDATA[Orange ear cushions included. ]]>
+                    </description>
+                                                                <content:encoded>
+                            <![CDATA[<p>Color us nostalgic.</p>
+<p>Sony has brought back the MDR-3-series headphones that debuted in 1979 alongside the <a href="https://music.si.edu/story/smithsonian-collections-object-sony-tps-l2-%E2%80%9Cwalkman%E2%80%9D-cassette-player-national-museum-american">Walkman TPS-L2</a> cassette player.</p>
+<img width="640" height="389" src="https://cdn.arstechnica.net/wp-content/uploads/2026/11/assets_MS2027636_000001_feature-1-1-D-640x389.jpg" class="right medium" alt="" decoding="async" loading="lazy" srcset="https://cdn.arstechnica.net/wp-content/uploads/2026/11/assets_MS2027636_000001_feature-1-1-D-640x389.jpg 640w, https://cdn.arstechnica.net/wp-content/uploads/2026/11/assets_MS2027636_000001_feature-1-1-D-1024x622.jpg 1024w, https://cdn.arstechnica.net/wp-content/uploads/2026/11/assets_MS2027636_000001_feature-1-1-D-768x467.jpg 768w, https://cdn.arstechnica.net/wp-content/uploads/2026/11/assets_MS2027636_000001_feature-1-1-D-980x595.jpg 980w, https://cdn.arstechnica.net/wp-content/uploads/2026/11/assets_MS2027636_000001_feature-1-1-D.jpg 1440w" sizes="auto, (max-width: 640px) 100vw, 640px">
+      In this marketing image Sony shared, you can see the Walkman TPS-L2.
+        Credit:
+          Sony
+      
+<p>Originally called the "MDR-3L2," the first Walkman headphones were known for their sleek, adjustable gray plastic headband, which extended via metal sliders and ended in signature orange, circular ear cushions. The lightweight, on-ear headphones are a contrast to the bulky headsets that are popular these days, which use wide, cushioned headbands for long-term comfort and large earcups that can support big drivers and are often heavily padded for noise isolation.</p><p><a href="https://arstechnica.com/gadgets/2026/11/sony-adds-usb-c-to-its-70s-era-mdr-3-walkman-headphones/">Read full article</a></p>
+<p><a href="https://arstechnica.com/gadgets/2026/11/sony-adds-usb-c-to-its-70s-era-mdr-3-walkman-headphones/#comments">Comments</a></p>
+]]>
+                        </content:encoded>
+                                    
+                                    <slash:comments>9</slash:comments>
+                
+                
+                <media:content height="648" medium="image" type="image/jpeg" url="https://cdn.arstechnica.net/wp-content/uploads/2026/11/assets_MS2027641_000001_feature-2-3-D-1152x648.jpg" width="1152">
+<media:thumbnail height="500" url="https://cdn.arstechnica.net/wp-content/uploads/2026/11/assets_MS2027641_000001_feature-2-3-D-500x500.jpg" width="500"/>
+<media:credit>Sony</media:credit><media:text>A woman wearing Sony's new MDR-3R USB-C headphones. </media:text></media:content>
+            </item>
+                    <item>
+                <title>Google: Schools can keep search while skipping Gemini, but AI search is non-negotiable</title>
+                <link>https://arstechnica.com/ai/2026/11/google-schools-can-keep-search-while-skipping-gemini-but-ai-search-is-non-negotiable/</link>
+                                    <comments>https://arstechnica.com/ai/2026/11/google-schools-can-keep-search-while-skipping-gemini-but-ai-search-is-non-negotiable/#comments</comments>
+                
+                <dc:creator>
+                    <![CDATA[Ryan Whitwam]]>
+                </dc:creator>
+                <pubDate>Thu, 05 Nov 2026 21:40:36 +0000</pubDate>
+                		<category><![CDATA[AI]]></category>
+		<category><![CDATA[Google]]></category>
+		<category><![CDATA[ai search]]></category>
+		<category><![CDATA[Artificial Intelligence]]></category>
+		<category><![CDATA[google]]></category>
+		<category><![CDATA[search]]></category>
+                <guid isPermaLink="true">https://arstechnica.com/ai/2026/11/google-schools-can-keep-search-while-skipping-gemini-but-ai-search-is-non-negotiable/</guid>
+
+                                    <description>
+                        <![CDATA[Google is technically offering schools more choice but not the choices anyone wants. ]]>
+                    </description>
+                                                                <content:encoded>
+                            <![CDATA[<p>Google faced the ire of educators and parents earlier this week when it announced a <a href="https://arstechnica.com/ai/2026/11/google-will-let-schools-skip-ai-tools-but-they-have-to-give-up-search-too/">new AI policy for K–12 schools</a>. Google said that it developed its new approach to give schools more control, but early reporting also suggested Google would block search access for schools that didn't want to use AI. Google didn't see the backlash coming, but now that it's here, the search giant is clarifying what exactly its new policy means and what's changing.</p>
+<p>The gist of the new policy, according to Google's blog post, is that schools using Google apps will have to opt into its AI products going forward. Since the company considers search part of its AI portfolio (Gemini, Gemini Notebook, Gemini in Classroom, and Search), schools have to specifically turn that on for logged-in student accounts.</p>
+<p>When Google revealed its new policy, the company's VP for education spoke exclusively to <a href="https://www.nytimes.com/2026/11/03/us/google-search-schools-restrict-ai.html">The New York Times</a>, which interpreted the situation as Google will "turn off search" if schools reject AI. This has a nefarious vibe, but it's probably not the most accurate way to describe how Google's educational AI system will operate. Google's approach may not be entirely altruistic, but it technically offers schools more choice and control than they have now. Instead of <em>Google</em> turning off search, it will let <em>schools</em> make that decision based on their internal AI policies.</p><p><a href="https://arstechnica.com/ai/2026/11/google-schools-can-keep-search-while-skipping-gemini-but-ai-search-is-non-negotiable/">Read full article</a></p>
+<p><a href="https://arstechnica.com/ai/2026/11/google-schools-can-keep-search-while-skipping-gemini-but-ai-search-is-non-negotiable/#comments">Comments</a></p>
+]]>
+                        </content:encoded>
+                                    
+                                    <slash:comments>11</slash:comments>
+                
+                
+                <media:content height="648" medium="image" type="image/jpeg" url="https://cdn.arstechnica.net/wp-content/uploads/2025/05/Google-sign-IO-1152x648.jpg" width="1152">
+<media:thumbnail height="500" url="https://cdn.arstechnica.net/wp-content/uploads/2025/05/Google-sign-IO-500x500-1748638352.jpg" width="500"/>
+<media:credit>Ryan Whitwam</media:credit></media:content>
+            </item>
+                    <item>
+                <title>Lawsuit: Man introduced his wife to ChatGPT. She used it to plan his murder.</title>
+                <link>https://arstechnica.com/tech-policy/2026/11/lawsuit-man-introduced-his-wife-to-chatgpt-she-used-it-to-plan-his-murder/</link>
+                                    <comments>https://arstechnica.com/tech-policy/2026/11/lawsuit-man-introduced-his-wife-to-chatgpt-she-used-it-to-plan-his-murder/#comments</comments>
+                
+                <dc:creator>
+                    <![CDATA[Ashley Belanger]]>
+                </dc:creator>
+                <pubDate>Thu, 05 Nov 2026 21:39:40 +0000</pubDate>
+                		<category><![CDATA[AI]]></category>
+		<category><![CDATA[Policy]]></category>
+		<category><![CDATA[AI safety]]></category>
+		<category><![CDATA[attempted murder]]></category>
+		<category><![CDATA[chatbot]]></category>
+		<category><![CDATA[ChatGPT]]></category>
+		<category><![CDATA[murder]]></category>
+		<category><![CDATA[openai]]></category>
+		<category><![CDATA[poisoning]]></category>
+                <guid isPermaLink="true">https://arstechnica.com/tech-policy/2026/11/lawsuit-man-introduced-his-wife-to-chatgpt-she-used-it-to-plan-his-murder/</guid>
+
+                                    <description>
+                        <![CDATA[Bitter energy drinks turned out to be ChatGPT-steered poisoning, lawsuit says.]]>
+                    </description>
+                                                                <content:encoded>
+                            <![CDATA[<p>ChatGPT allegedly helped a North Carolina woman, Cheryl Gates, craft a “personalized plan” to poison her husband, James, after fueling her delusions that he planned to divorce her and leave her with nothing.</p>
+<p>A grand jury indicted Cheryl Gates on charges of attempted first-degree murder and food contamination in October. About a week prior, the accusations that ChatGPT was a co-conspirator in the attempted murder came in a <a href="https://cdn.arstechnica.net/wp-content/uploads/2026/11/Gates-v-OpenAI-Complaint-11-5-26.pdf">lawsuit</a> filed in San Francisco County Superior Court that was made public this week. In it, James Gates alleged that OpenAI and Sam Altman failed to employ technical safeguards to shut down Cheryl’s chats even after her queries became “obviously suspicious” and sought advice on how to execute and conceal a homicide.</p>
+<p>At first, Cheryl told ChatGPT that she was researching poisoning out of fear that her husband might possibly try to kill her—framing her queries as “self-protection.” Coming to the rescue, ChatGPT did not terminate the conversation. Instead, it helped her “with specific instructions for the preparation, dosage, and administration of Oleander, including whether anti-nausea medicine would accelerate or inhibit death, whether it would show on an autopsy report, and whether it could be injected into a vein or muscle instead of being ingested in tea and have the same lethal effect,” the lawsuit said.</p><p><a href="https://arstechnica.com/tech-policy/2026/11/lawsuit-man-introduced-his-wife-to-chatgpt-she-used-it-to-plan-his-murder/">Read full article</a></p>
+<p><a href="https://arstechnica.com/tech-policy/2026/11/lawsuit-man-introduced-his-wife-to-chatgpt-she-used-it-to-plan-his-murder/#comments">Comments</a></p>
+]]>
+                        </content:encoded>
+                                    
+                                    <slash:comments>22</slash:comments>
+                
+                
+                <media:content height="648" medium="image" type="image/jpeg" url="https://cdn.arstechnica.net/wp-content/uploads/2026/11/GettyImages-2240656304-1024x648.jpg" width="1024">
+<media:thumbnail height="500" url="https://cdn.arstechnica.net/wp-content/uploads/2026/11/GettyImages-2240656304-500x500.jpg" width="500"/>
+<media:credit>Aaron M. Sprecher / Contributor | Getty Images Sport</media:credit></media:content>
+            </item>
+                    <item>
+                <title>BMW bumps battery for the better: The 2027 i7 60 xDrive, driven</title>
+                <link>https://arstechnica.com/cars/2026/11/bmw-bumps-battery-for-the-better-the-2027-i7-60-xdrive-driven/</link>
+                                    <comments>https://arstechnica.com/cars/2026/11/bmw-bumps-battery-for-the-better-the-2027-i7-60-xdrive-driven/#comments</comments>
+                
+                <dc:creator>
+                    <![CDATA[Jonathan M. Gitlin]]>
+                </dc:creator>
+                <pubDate>Thu, 05 Nov 2026 20:45:50 +0000</pubDate>
+                		<category><![CDATA[Cars]]></category>
+		<category><![CDATA[2027 BMW i7]]></category>
+		<category><![CDATA[car review]]></category>
+		<category><![CDATA[First drive]]></category>
+                <guid isPermaLink="true">https://arstechnica.com/cars/2026/11/bmw-bumps-battery-for-the-better-the-2027-i7-60-xdrive-driven/</guid>
+
+                                    <description>
+                        <![CDATA[BMW has updated its flagship sedan with the newest EV and infotainment tech.]]>
+                    </description>
+                                                                <content:encoded>
+                            <![CDATA[<aside class="pullbox sidebar fullwidth">BMW provided flights from Washington, DC, to Los Angeles and accommodation so Ars could drive the 2027 i7 as well as the 2027 iX5 and X5. Ars does not accept paid editorial content.</aside>
+<p>When BMW debuted the new 7 Series in 2022, it set a new standard for large luxury sedans, increasingly irrelevant though that class is. Rather than siloing off an electric alternative like Mercedes, with its EQS alongside the normal S-Class, BMW simply made the powertrain an option. <a href="https://arstechnica.com/cars/2022/11/how-the-the-wire-helped-me-understand-the-2023-bmw-760i-xdrive/">Stick with a V8</a> if you want, or consider the rather good electric version instead—only subtle differences like the badging and lack of exhaust pipes give the game away.</p>
+<p>Since then, BMW has brought out a string of even newer electric vehicles for the 5 and 3 Series (plus their SUV counterparts). It has switched from battery packs made of prismatic cells to more energy-dense arrangements of cylindrical cells. The motors are still electrically excited synchronous ones, but now the drive units feature silicon carbide inverters and more compact packaging.</p>
+<p>This sixth-generation electric powertrain was designed for the <a href="https://arstechnica.com/cars/2025/12/great-handling-advanced-ev-tech-we-drive-the-2026-bmw-ix3/">clean-sheet Neue Klasse</a> family, which also threw out the legacy cruft of dozens and dozens of discrete single-function electronic control units for a handful of powerful domain controllers. These computers take over those functions but with much faster processing power—and therefore more capabilities in terms of chassis control or powertrain efficiency—as well as the ability to be more easily updated.</p><p><a href="https://arstechnica.com/cars/2026/11/bmw-bumps-battery-for-the-better-the-2027-i7-60-xdrive-driven/">Read full article</a></p>
+<p><a href="https://arstechnica.com/cars/2026/11/bmw-bumps-battery-for-the-better-the-2027-i7-60-xdrive-driven/#comments">Comments</a></p>
+]]>
+                        </content:encoded>
+                                    
+                                    <slash:comments>10</slash:comments>
+                
+                
+                <media:content height="648" medium="image" type="image/jpeg" url="https://cdn.arstechnica.net/wp-content/uploads/2026/11/BMW_i7_60_xD_Vancouver-Green_023-1152x648.jpg" width="1152">
+<media:thumbnail height="500" url="https://cdn.arstechnica.net/wp-content/uploads/2026/11/BMW_i7_60_xD_Vancouver-Green_023-500x500.jpg" width="500"/>
+<media:credit>Daniel Kraus/BMW</media:credit><media:text>BMW tweaked the nose on the i7 for model-year 2027, but the changes are far deeper than that.</media:text></media:content>
+            </item>
+                    
+            </channel>
+</rss>

@@ -1,0 +1,25 @@
+.DS_Store
+.vscode
+.idea
+*.log
+node_modules
+.temp
+dist/
+.env
+.env.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+CLAUDE.md
+
+.output
+.wxt
+
+# Affinity and Dropbox lock files
+*~lock~*

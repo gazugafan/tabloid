@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<rdf:RDF
+ xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+ xmlns="http://purl.org/rss/1.0/"
+ xmlns:admin="http://webns.net/mvcb/"
+ xmlns:content="http://purl.org/rss/1.0/modules/content/"
+ xmlns:dc="http://purl.org/dc/elements/1.1/"
+ xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+ xmlns:syn="http://purl.org/rss/1.0/modules/syndication/"
+ xmlns:taxo="http://purl.org/rss/1.0/modules/taxonomy/"
+>
+
+<channel rdf:about="https://slashdot.org/">
+<title>Slashdot</title>
+<link>https://slashdot.org/</link>
+<description>News for nerds, stuff that matters</description>
+<dc:language>en-us</dc:language>
+<dc:rights>Copyright Slashdot Media. All Rights Reserved.</dc:rights>
+<dc:date>2026-11-05T23:17:07+00:00</dc:date>
+<dc:publisher>Slashdot Media</dc:publisher>
+<dc:creator>feedback@slashdot.org</dc:creator>
+<dc:subject>Technology</dc:subject>
+<syn:updateBase>1970-01-01T00:00+00:00</syn:updateBase>
+<syn:updateFrequency>1</syn:updateFrequency>
+<syn:updatePeriod>hourly</syn:updatePeriod>
+<items>
+ <rdf:Seq>
+  <rdf:li rdf:resource="https://politics.slashdot.org/story/26/11/05/2150249/openai-responds-to-us-midterm-elections-with-new-commitment-to-communities?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://it.slashdot.org/story/26/11/05/2140208/openssh-flaw-lets-attackers-log-into-password-disabled-linux-accounts?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://apple.slashdot.org/story/26/11/05/203200/apple-is-putting-employees-on-an-ai-budget?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://it.slashdot.org/story/26/11/05/1924217/want-to-rent-an-internet-address-at-the-white-house?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://tech.slashdot.org/story/26/11/05/193239/discord-is-ditching-electron-for-rust?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://hardware.slashdot.org/story/26/11/05/1732222/motorolas-ultra-premium-smartphone-is-its-first-with-grapheneos-support?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://news.slashdot.org/story/26/11/05/1655231/major-digital-bank-in-paraguay-collapses-with-half-of-populations-savings?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://news.slashdot.org/story/26/11/05/057254/microsofts-imagine-cup-evolves-from-student-competition-to-ai-startup-contest?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://science.slashdot.org/story/26/11/05/0527244/nasa-announces-x-70-experimental-aircraft-to-advance-flight-research?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://yro.slashdot.org/story/26/11/05/052220/3m-to-pay-over-7-billion-to-settle-forever-chemical-groundwater-claims?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://yro.slashdot.org/story/26/11/05/0322258/vietnam-jails-pirate-football-streamers-for-up-to-a-year?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://yro.slashdot.org/story/26/11/04/2319208/axon-sued-over-ai-powered-license-plate-reader-network?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://tech.slashdot.org/story/26/11/04/207222/openai-says-chatgpt-is-catching-up-to-google-in-search?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://entertainment.slashdot.org/story/26/11/04/2034237/netflix-launches-first-ai-branded-content-recommendations-feature-on-tvs?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+  <rdf:li rdf:resource="https://tech.slashdot.org/story/26/11/04/2021250/waymo-cuts-ties-with-uber-will-serve-riders-directly?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed" />
+ </rdf:Seq>
+</items>
+<image rdf:resource="https://a.fsdn.com/sd/topics/topicslashdot.gif" />
+<textinput rdf:resource="https://slashdot.org/search.pl" />
+</channel>
+<image rdf:about="https://a.fsdn.com/sd/topics/topicslashdot.gif">
+<title>Slashdot</title>
+<url>https://a.fsdn.com/sd/topics/topicslashdot.gif</url>
+<link>https://slashdot.org/</link>
+</image>
+<item rdf:about="https://politics.slashdot.org/story/26/11/05/2150249/openai-responds-to-us-midterm-elections-with-new-commitment-to-communities?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>OpenAI Responds to US Midterm Elections With New Commitment to Communities</title>
+<link>https://politics.slashdot.org/story/26/11/05/2150249/openai-responds-to-us-midterm-elections-with-new-commitment-to-communities?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>"OpenAI has published a new National Community Compact and Compute Campus Policy Blueprint, apparently in response to the Blue Wave Midterm Elections," writes ancient Slashdot reader Gilmoure. "Instead of moving into communities like a juggernaut, they say they will be dangling friendly carrots going forward." Here's an excerpt from OpenAI's article: Every future compute campus OpenAI owns and operates will have its own local compact. We'll engage residents early enough to ensure their input shapes project plans, give them a local point of contact throughout the life of the campus, and report publicly each year on how we're doing. Each compact will reflect local priorities and include a common set of commitments:
+ 
+ - Pay our own way on energy and infrastructure. We'll pay the full cost of the electricity we use and the infrastructure needed to serve us. Before major spending begins, we'll provide financial assurances so other customers are protected if a project is delayed, reduced, or canceled.
+ - Protect local resources and report on our impact. We'll develop a water plan for each campus, prioritize closed-loop or low-water cooling, and publish site-level water and electricity use. We'll publish construction plans and independent noise studies before operations begin and annually afterward. And we will not use non-disclosure agreements (NDAs) with public officials, allowing only narrow protections covering legitimate security information, trade secrets, or proprietary or competitively sensitive information.
+ - Create opportunities for local workers and businesses. We'll publish the jobs we expect to create, work with unions and training providers to help residents prepare for them, and report annually on hiring and apprenticeships. We'll also make sustained investments in priorities residents help select.
+ 
+[...] The investments that help America compete globally can also help communities prosper locally. That starts with giving residents a say while plans can still change and a way to hold developers accountable for delivering on their commitments. That's what we're committing to at the campuses we own and operate, and what we believe people should be able to count on wherever AI infrastructure is built across the country.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=OpenAI+Responds+to+US+Midterm+Elections+With+New+Commitment+to+Communities%3A+https%3A%2F%2Fpolitics.slashdot.org%2Fstory%2F26%2F11%2F05%2F2150249%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fpolitics.slashdot.org%2Fstory%2F26%2F11%2F05%2F2150249%2Fopenai-responds-to-us-midterm-elections-with-new-commitment-to-communities%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://politics.slashdot.org/story/26/11/05/2150249/openai-responds-to-us-midterm-elections-with-new-commitment-to-communities?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24143967&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>BeauHD</dc:creator>
+<dc:date>2026-11-05T23:00:00+00:00</dc:date>
+<dc:subject>ai</dc:subject>
+<slash:department>vibe-shift</slash:department>
+<slash:section>politics</slash:section>
+<slash:comments>4</slash:comments>
+<slash:hit_parade>4,4,4,4,0,0,0</slash:hit_parade>
+</item>
+<item rdf:about="https://it.slashdot.org/story/26/11/05/2140208/openssh-flaw-lets-attackers-log-into-password-disabled-linux-accounts?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>OpenSSH Flaw Lets Attackers Log Into Password-Disabled Linux Accounts</title>
+<link>https://it.slashdot.org/story/26/11/05/2140208/openssh-flaw-lets-attackers-log-into-password-disabled-linux-accounts?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>A newly disclosed OpenSSH flaw dubbed "*sshole" can allow attackers to log in to password-disabled accounts on certain musl-based Linux systems simply by submitting a password longer than 256 bytes. "Apparently certain varieties of musl Linux (Alpine, OpenWrt, Buildroot, Yocto, etc.) have had this OpenSSH vulnerability for about a decade," writes longtime Slashdot reader AlteredEgg. "Upgrade now!" BleepingComputer reports: Security researcher Ozgun Kultekin, who discovered and released details on the vulnerability today, says the flaw has existed since 2016 and stems from how OpenSSH handles password verification errors on systems using the musl C library. Linux accounts can be configured to prevent password logins by replacing their password hash with an asterisk (*) in the /etc/shadow file. Because this is not a valid password hash, no password should allow access to those accounts. However, a patch introduced in OpenSSH in 2016 to fix a username enumeration vulnerability tracked as CVE-2016-6210 changed how OpenSSH handled accounts without usable password hashes.
+ 
+To prevent attackers from identifying valid usernames through different response times, OpenSSH was modified to perform password hashing even when an account had no usable password hash, including accounts configured with * to block password logins. The problem is that the musl C library's crypt() function also returns * when password hashing fails, including when a submitted password exceeds its 256-byte limit. This means an attacker can submit an oversized password and cause OpenSSH to compare the returned * against the account's stored *, resulting in a successful login.
+ 
+To be clear, the flaw does not allow attackers to bypass passwords on accounts with valid password hashes. [...] Admins who can't immediately install the update can mitigate the issue by turning off SSH password authentication with PasswordAuthentication no in their SSH server configuration and restarting SSH. Kultekin says admins can also check for signs of exploitation by examining SSH authentication logs for password-based logins for accounts that should not allow them.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=OpenSSH+Flaw+Lets+Attackers+Log+Into+Password-Disabled+Linux+Accounts%3A+https%3A%2F%2Fit.slashdot.org%2Fstory%2F26%2F11%2F05%2F2140208%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fit.slashdot.org%2Fstory%2F26%2F11%2F05%2F2140208%2Fopenssh-flaw-lets-attackers-log-into-password-disabled-linux-accounts%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://it.slashdot.org/story/26/11/05/2140208/openssh-flaw-lets-attackers-log-into-password-disabled-linux-accounts?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24143965&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>BeauHD</dc:creator>
+<dc:date>2026-11-05T22:00:00+00:00</dc:date>
+<dc:subject>security</dc:subject>
+<slash:department>PSA</slash:department>
+<slash:section>it</slash:section>
+<slash:comments>12</slash:comments>
+<slash:hit_parade>12,12,12,12,3,1,0</slash:hit_parade>
+</item>
+<item rdf:about="https://apple.slashdot.org/story/26/11/05/203200/apple-is-putting-employees-on-an-ai-budget?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>Apple Is Putting Employees On an AI Budget</title>
+<link>https://apple.slashdot.org/story/26/11/05/203200/apple-is-putting-employees-on-an-ai-budget?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>According to Bloomberg, Apple is cutting employee AI spending limits to reduce costs, lowering some engineers from $300 to $200 per day and considering limits as low as $100, with some teams capped at $25. Employees are also being encouraged to use cheaper models or on-device AI. MacRumors reports: Engineers at Apple have the largest budgets because using AI for coding can consume a large number of tokens. Apple lets employees use Claude, ChatGPT, Gemini, and other models. Some Apple employees told Bloomberg that few were using their full $300 daily limit, so the savings may be small. Apple has also hired outside productivity consultants for some divisions. Combined with the AI cost cuts, the reviews have fueled worries about possible restructuring.&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Apple+Is+Putting+Employees+On+an+AI+Budget%3A+https%3A%2F%2Fapple.slashdot.org%2Fstory%2F26%2F11%2F05%2F203200%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fapple.slashdot.org%2Fstory%2F26%2F11%2F05%2F203200%2Fapple-is-putting-employees-on-an-ai-budget%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://apple.slashdot.org/story/26/11/05/203200/apple-is-putting-employees-on-an-ai-budget?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24143893&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>BeauHD</dc:creator>
+<dc:date>2026-11-05T21:00:00+00:00</dc:date>
+<dc:subject>ai</dc:subject>
+<slash:department>cost-saving</slash:department>
+<slash:section>apple</slash:section>
+<slash:comments>24</slash:comments>
+<slash:hit_parade>24,24,22,16,1,0,0</slash:hit_parade>
+</item>
+<item rdf:about="https://it.slashdot.org/story/26/11/05/1924217/want-to-rent-an-internet-address-at-the-white-house?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed">
+<title>Want to Rent an Internet Address at the White House?</title>
+<link>https://it.slashdot.org/story/26/11/05/1924217/want-to-rent-an-internet-address-at-the-white-house?utm_source=rss1.0mainlinkanon&amp;utm_medium=feed</link>
+<description>Longtime Slashdot reader bbsguru shares a report from KrebsOnSecurity: Several staffers at the White House are using computers or mobile devices equipped with residential proxy services that render their internet address available for others to rent, security experts warned today. One of the proxy services is a Russian company whose founder's web hosting business was ground zero for cyberattacks against election systems in Arizona and Illinois in 2016. The security firm Layer3 Intel said it detected multiple residential proxy nodes beaconing out from the internet address network reserved for the Executive Office of the President (AS2650). Layer3 said the proxy activity was relatively persistent between October 5 to November 3, and that a review of the proxies available from AS2650 showed they exited from the White House network 236 times during that period.
+ 
+The proxy tracking company Synthient said on Twitter/X that the activity it saw coming from AS2650 was related to multiple Windows 11 installations of a service called Infatica, a proxy program that is often integrated into "free" mobile and desktop applications. Infatica's founder Vladimir Fomenko is a Russian man whose hosting firm King Servers was home to six of the eight internet addresses used by Russia's state security services to compromise databases for election systems in Arizona and Illinois in 2016. [...] Layer3 Intel said the proxy exit nodes at the White House came from six internet addresses, on 26 of the 30 days, and that most of the activity happens in the evening, between 5 p.m. and midnight. Incredibly, Infatica was not the only proxy service that reportedly has been reselling access to White House internet addresses: Layer3 Intel said it found 28 separate residential proxy services were able to exit through this network. "This is public access," the Layer3 Intel team wrote. "Anybody can obtain it by signing up to a public residential proxy service, paying a few dollars and sending requests through it. We did not selectively target this network or try to make our probes exit from it. We caught this by chance, simply by requesting global rotating access through these services."&lt;p&gt;&lt;div class="share_submission" style="position:relative;"&gt;
+&lt;a class="slashpop" href="http://twitter.com/home?status=Want+to+Rent+an+Internet+Address+at+the+White+House%3F%3A+https%3A%2F%2Fit.slashdot.org%2Fstory%2F26%2F11%2F05%2F1924217%2F%3Futm_source%3Dtwitter%26utm_medium%3Dtwitter"&gt;&lt;img src="https://a.fsdn.com/sd/twitter_icon_large.png"&gt;&lt;/a&gt;
+&lt;a class="slashpop" href="http://www.facebook.com/sharer.php?u=https%3A%2F%2Fit.slashdot.org%2Fstory%2F26%2F11%2F05%2F1924217%2Fwant-to-rent-an-internet-address-at-the-white-house%3Futm_source%3Dslashdot%26utm_medium%3Dfacebook"&gt;&lt;img src="https://a.fsdn.com/sd/facebook_icon_large.png"&gt;&lt;/a&gt;
+
+
+
+&lt;/div&gt;&lt;/p&gt;&lt;p&gt;&lt;a href="https://it.slashdot.org/story/26/11/05/1924217/want-to-rent-an-internet-address-at-the-white-house?utm_source=rss1.0moreanon&amp;amp;utm_medium=feed"&gt;Read more of this story&lt;/a&gt; at Slashdot.&lt;/p&gt;&lt;iframe src="https://slashdot.org/slashdot-it.pl?op=discuss&amp;amp;id=24143863&amp;amp;smallembed=1" style="height: 300px; width: 100%; border: none;"&gt;&lt;/iframe&gt;</description>
+<dc:creator>BeauHD</dc:creator>
+<dc:date>2026-11-05T20:00:00+00:00</dc:date>
+<dc:subject>security</dc:subject>
+<slash:department>would-you-look-at-that</slash:department>
+<slash:section>it</slash:section>
+<slash:comments>38</slash:comments>
+<slash:hit_parade>38,38,33,27,11,10,7</slash:hit_parade>
+</item>
+
+<textinput rdf:about="https://slashdot.org/search.pl">
+<title>Search Slashdot</title>
+<description>Search Slashdot stories</description>
+<name>query</name>
+<link>https://slashdot.org/search.pl</link>
+</textinput>
+</rdf:RDF>
