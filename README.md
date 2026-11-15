@@ -14,7 +14,7 @@ Works in Firefox, Chrome, Edge and other Chromium browsers.
 - **Your look.** Light, dark or follow the system, an accent color, widget opacity and blur, fonts, and backgrounds from your own images, Bing's photo of the day, Wikimedia or Unsplash.
 - **Sync, if you want it.** Through your browser account, Dropbox, a WebDAV server or a GitHub repository. Or keep it on this device only (the default).
 - **Backups.** Export and import your whole setup as a file.
-- **Narrow windows.** The grid becomes a single column, so Tabloid also works in a side-by-side window.
+- **Phones and narrow windows.** The grid becomes a single column, so Tabloid also works in a side-by-side window (and supported mobile browsers).
 
 ## Privacy
 
