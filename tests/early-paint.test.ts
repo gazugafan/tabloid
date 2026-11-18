@@ -60,6 +60,14 @@ describe('early page colors', () => {
     expect(early).toContain(`var(--bg, ${dark})`);
   });
 
+  it('are painted by html, never body, so the background image (behind the content) stays visible', () => {
+    // html has a background (from early.css), so a body background would paint as its own box, over the
+    // fixed z-index -1 background image, wherever there is content.
+    const body = /^body \{([^}]*)\}/m.exec(base)![1];
+    expect(body).not.toMatch(/background/);
+    expect(base).toMatch(/^html \{[^}]*background: var\(--bg\)/m);
+  });
+
   it('is linked, with the script and a color-scheme hint, from both pages', () => {
     for (const page of ['entrypoints/newtab/index.html', 'entrypoints/options/index.html']) {
       const html = readFileSync(page, 'utf-8');
