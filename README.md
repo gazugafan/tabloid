@@ -1,4 +1,14 @@
-# Tabloid
+<p align="center">
+  <img src="store/icon-512.png" alt="" width="96" height="96" />
+</p>
+
+<h1 align="center">Tabloid</h1>
+
+<p align="center">
+  <a href="https://chromewebstore.google.com/detail/tabloid/fjfdlpgpignacaphhlgeabgdbimnobkh"><img src="https://img.shields.io/badge/Chrome_Web_Store-Install-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Install from the Chrome Web Store" /></a>
+  <a href="https://addons.mozilla.org/en-US/firefox/addon/tabloid-rss-widget-dashboard"><img src="https://img.shields.io/badge/Firefox_Add--ons-Install-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white" alt="Install from Firefox Add-ons" /></a>
+  <a href="https://microsoftedge.microsoft.com/addons/detail/heacppjhiajeohhbkikmmdbaiojdonla"><img src="https://img.shields.io/badge/Edge_Add--ons-Install-0078D7?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAxLjVBMTAuNSAxMC41IDAgMCAwIDEuNSAxMmMuNi00LjQgNC40LTcuNSA4LjYtNy41IDMuNCAwIDYgMi4xIDYgNC43IDAgMS42LTEuMSAyLjYtMi44IDIuNkg3LjVjMCAzLjIgMi42IDUuNCA2LjEgNS40IDIuNiAwIDQuOS0xIDYuNC0yLjZ2NEExMC41IDEwLjUgMCAwIDAgMjIuNSAxMiAxMC41IDEwLjUgMCAwIDAgMTIgMS41eiIvPjwvc3ZnPgo=" alt="Install from Edge Add-ons" /></a>
+</p>
 
 A customizable new tab page and home page, with an RSS reader at its heart. Arrange widgets on a grid, group your feeds, and keep everything on your own device unless you choose to sync it.
 
